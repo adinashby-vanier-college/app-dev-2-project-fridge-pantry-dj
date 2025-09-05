@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,6 +13,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static String get _googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -19,6 +23,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController newPasswordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+
+  final TextEditingController addressController = TextEditingController();
+  String originalAddress = '';
+  List<Map<String, dynamic>> _addressSuggestions = [];
+  bool _showAddressSuggestions = false;
 
   String originalName = '';
   String originalEmail = '';
@@ -38,36 +47,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadUserData();
   }
 
-  void _loadUserData() async {
+  Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       originalName = user.displayName ?? 'User';
       originalEmail = user.email ?? '';
-      
-      // Load postcode from FBRD
+
+      // Load postcode and address from Firebase
       try {
         final database = FirebaseDatabase.instance;
         final userRef = database.ref('users/${user.uid}');
         final snapshot = await userRef.get();
-        
+
         if (snapshot.exists) {
           final userData = snapshot.value as Map<dynamic, dynamic>;
           originalPostcode = userData['postcode'] ?? '';
+          originalAddress = userData['address'] ?? '';
         }
       } catch (e) {
         originalPostcode = '';
+        originalAddress = '';
       }
     } else {
-
       originalName = 'Hello World';
       originalEmail = 'hello@world.com';
       originalPostcode = '';
+      originalAddress = '';
     }
 
     nameController.text = originalName;
     emailController.text = originalEmail;
     postcodeController.text = originalPostcode;
-    
+    addressController.text = originalAddress;
+
     if (mounted) setState(() {});
   }
 
@@ -77,9 +89,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         nameController.text = originalName;
         emailController.text = originalEmail;
         postcodeController.text = originalPostcode;
+        addressController.text = originalAddress;
       }
       _isEditingInfo = !_isEditingInfo;
       _isChangingPassword = false;
+      _showAddressSuggestions = false;
     });
   }
 
@@ -96,30 +110,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveUserInfo() async {
     setState(() => _isLoading = true);
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-
+        // Update display name if changed
         if (nameController.text.trim() != originalName) {
           await user.updateDisplayName(nameController.text.trim());
         }
 
-
+        // Update email if changed
         if (emailController.text.trim() != originalEmail) {
           await user.verifyBeforeUpdateEmail(emailController.text.trim());
         }
 
-        // Save postcode FBRT
+        if (!_isValidCanadianPostalCode(postcodeController.text)) {
+          _showErrorMessage('Please enter a valid Canadian postal code.');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        // Save address and postal code to Firebase
         final database = FirebaseDatabase.instance;
         final userRef = database.ref('users/${user.uid}');
-        await userRef.update({'postcode': postcodeController.text.trim()});
+        await userRef.update({
+          'address': addressController.text.trim(),
+          'postcode': originalPostcode.trim(), // auto-filled postal code
+        });
 
-
+        // Update local originals for future edits
         setState(() {
           originalName = nameController.text.trim();
           originalEmail = emailController.text.trim();
+          originalAddress = addressController.text.trim();
           originalPostcode = postcodeController.text.trim();
           _isEditingInfo = false;
+          _showAddressSuggestions = false;
         });
 
         _showSuccessMessage('Profile updated successfully!');
@@ -148,14 +174,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-
-
         final credential = EmailAuthProvider.credential(
           email: user.email!,
           password: currentPasswordController.text,
         );
         await user.reauthenticateWithCredential(credential);
-
 
         await user.updatePassword(newPasswordController.text);
 
@@ -209,7 +232,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     //Ask password when deleting
     if (shouldDelete) {
-
       final password = await _showPasswordDialog();
       if (password != null) {
         setState(() => _isLoading = true);
@@ -360,8 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                _showDeletePassword =
-                    false;
+                _showDeletePassword = false;
                 Navigator.pop(context);
               },
               child: const Text(
@@ -371,8 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                _showDeletePassword =
-                    false;
+                _showDeletePassword = false;
                 Navigator.pop(context, passwordController.text);
               },
               child: Text(
@@ -404,11 +424,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<List<Map<String, dynamic>>> _getAddressSuggestions(
+    String input,
+  ) async {
+    if (input.length < 3 || _googleApiKey.isEmpty) return [];
+
+    // Get the postal code to use as a filter
+    final postcode = postcodeController.text.trim().toUpperCase();
+    String searchQuery = input;
+
+    // If postal code is entered, include it in the search for better filtering
+    if (postcode.isNotEmpty) {
+      searchQuery = '$input, $postcode, Canada';
+    } else {
+      searchQuery = '$input, Canada';
+    }
+
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+        '?input=${Uri.encodeComponent(searchQuery)}'
+        '&components=country:ca'
+        '&key=$_googleApiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final predictions = data['predictions'] as List;
+          List<Map<String, dynamic>> suggestions = predictions
+              .map(
+                (prediction) => {
+                  'description': prediction['description'],
+                  'place_id': prediction['place_id'],
+                },
+              )
+              .toList();
+
+          // Filter suggestions by postal code if one is entered
+          if (postcode.isNotEmpty) {
+            suggestions = suggestions.where((suggestion) {
+              final description = suggestion['description']
+                  .toString()
+                  .toUpperCase();
+              return description.contains(postcode);
+            }).toList();
+          }
+
+          return suggestions;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching address suggestions: $e');
+    }
+    return [];
+  }
+
+  void _onAddressChanged(String value) async {
+    if (value.length >= 3) {
+      final suggestions = await _getAddressSuggestions(value);
+      setState(() {
+        _addressSuggestions = suggestions;
+        _showAddressSuggestions = suggestions.isNotEmpty;
+      });
+    } else {
+      setState(() {
+        _addressSuggestions = [];
+        _showAddressSuggestions = false;
+      });
+    }
+  }
+
+  Future<String?> _getPostalCodeFromPlaceId(String placeId) async {
+    if (_googleApiKey.isEmpty) return null;
+
+    final url =
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=address_component&key=$_googleApiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final components = data['result']['address_components'] as List;
+        final postalCodeComponent = components.firstWhere(
+          (comp) => (comp['types'] as List).contains('postal_code'),
+          orElse: () => null,
+        );
+        if (postalCodeComponent != null) {
+          return postalCodeComponent['long_name'] as String;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching postal code: $e');
+    }
+    return null;
+  }
+
+  void _selectAddressSuggestion(Map<String, dynamic> suggestion) async {
+    // Set the address text
+    setState(() {
+      addressController.text = suggestion['description'];
+      _showAddressSuggestions = false;
+      _addressSuggestions = [];
+    });
+
+    // Fetch postal code from Google Place API
+    final postalCode = await _getPostalCodeFromPlaceId(suggestion['place_id']);
+    if (postalCode != null) {
+      setState(() {
+        originalPostcode = postalCode; // store for saving
+        postcodeController.text = postalCode; // display in the UI immediately
+      });
+      debugPrint('Auto-filled postal code: $postalCode');
+    }
+  }
+
+  void _onPostcodeChanged(String value) {
+    // Clear address suggestions when postal code changes
+    setState(() {
+      _showAddressSuggestions = false;
+      _addressSuggestions = [];
+    });
+
+    // If address field has content, refresh suggestions with new postal code
+    if (addressController.text.isNotEmpty && value.length >= 6) {
+      _onAddressChanged(addressController.text);
+    }
+  }
+
+  bool _isValidCanadianPostalCode(String postalCode) {
+    // Canadian postal code format: A1A 1A1 (with or without space)
+    final regex = RegExp(r'^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$');
+    return regex.hasMatch(postalCode.trim());
+  }
+
   @override
   void dispose() {
     nameController.dispose();
     emailController.dispose();
     postcodeController.dispose();
+    addressController.dispose();
     currentPasswordController.dispose();
     newPasswordController.dispose();
     confirmPasswordController.dispose();
@@ -468,7 +623,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         'Hey, ${originalName.isEmpty ? 'User' : originalName}',
                         style: const TextStyle(
@@ -524,7 +678,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.7),
+        color: Colors.white.withOpacity(0.7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -542,6 +696,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           _buildInfoRow('Name', nameController.text),
           _buildInfoRow('Email', emailController.text),
+          _buildInfoRow(
+            'Address',
+            addressController.text.isEmpty
+                ? 'Not set'
+                : '${addressController.text} ${postcodeController.text.isNotEmpty ? '(${postcodeController.text})' : ''}',
+          ),
           _buildInfoRow('Postcode', postcodeController.text),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -596,7 +756,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.7),
+        color: Colors.white.withOpacity(0.7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -619,11 +779,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Email field
           _buildEditField('EMAIL', emailController),
-          const SizedBox(height: 16),
-
-          // Postcode field
-          _buildEditField('POSTCODE', postcodeController),
           const SizedBox(height: 20),
+
+          // Address field with autocomplete
+          const Text(
+            'ADDRESS',
+            style: TextStyle(
+              fontFamily: 'NunitoSans',
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3D36),
+              letterSpacing: 1.2,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFB8D4E3),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: TextField(
+                  controller: addressController,
+                  onChanged: _onAddressChanged,
+                  style: const TextStyle(
+                    fontFamily: 'NunitoSans',
+                    fontSize: 16,
+                    color: Color(0xFF1E3D36),
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    hintText: 'Enter your address',
+                  ),
+                ),
+              ),
+              if (_showAddressSuggestions && _addressSuggestions.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _addressSuggestions.length > 5
+                        ? 5
+                        : _addressSuggestions.length,
+                    itemBuilder: (context, index) {
+                      final suggestion = _addressSuggestions[index];
+                      return ListTile(
+                        dense: true,
+                        title: Text(
+                          suggestion['description'],
+                          style: const TextStyle(
+                            fontFamily: 'NunitoSans',
+                            fontSize: 14,
+                            color: Color(0xFF1E3D36),
+                          ),
+                        ),
+                        onTap: () => _selectAddressSuggestion(suggestion),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          _buildEditFieldWithCallback('POSTCODE', postcodeController, (value) {
+            _onPostcodeChanged(value); // call when user types
+          }),
+          const SizedBox(height: 16),
 
           // Save and Cancel buttons
           Row(
@@ -714,6 +956,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildEditFieldWithCallback(
+    String label,
+    TextEditingController controller,
+    Function(String) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'NunitoSans',
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E3D36),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFB8D4E3),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: TextField(
+            controller: controller,
+            onChanged: (value) {
+              setState(() {}); // updates UI if needed
+              onChanged(value); // callback
+            },
+            style: const TextStyle(
+              fontFamily: 'NunitoSans',
+              fontSize: 16,
+              color: Color(0xFF1E3D36),
+            ),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPasswordButton() {
     return Container(
       width: double.infinity,
@@ -756,7 +1046,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3),
+        color: Colors.white.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
