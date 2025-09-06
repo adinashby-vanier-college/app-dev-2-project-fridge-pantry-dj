@@ -1,78 +1,6 @@
 import 'package:flutter/material.dart';
-//TODO  Import  API service
 
-//TODO need to delete?
-// For demo purposes, including the search functionality directly
-class ApiService {
-  static const List<String> _ingredientDatabase = [
-    // Proteins
-    'Chicken breast',
-    'Chicken thighs',
-    'Ground beef',
-    'Beef steak',
-    'Pork chops',
-    'Salmon', 'Tuna', 'Shrimp', 'Eggs', 'Tofu', 'Beans', 'Lentils', 'Chickpeas',
-
-    // Vegetables
-    'Tomatoes', 'Onions', 'Garlic', 'Bell peppers', 'Carrots', 'Broccoli',
-    'Spinach',
-    'Lettuce',
-    'Cucumbers',
-    'Mushrooms',
-    'Potatoes',
-    'Sweet potatoes',
-    'Zucchini', 'Eggplant', 'Celery', 'Cabbage', 'Cauliflower', 'Green beans',
-
-    // Grains & Starches
-    'Rice', 'Pasta', 'Bread', 'Quinoa', 'Oats', 'Flour', 'Noodles', 'Couscous',
-
-    // Dairy & Alternatives
-    'Milk',
-    'Cheese',
-    'Yogurt',
-    'Butter',
-    'Cream',
-    'Almond milk',
-    'Coconut milk',
-
-    // Herbs & Spices
-    'Basil', 'Oregano', 'Thyme', 'Rosemary', 'Parsley', 'Cilantro', 'Salt',
-    'Black pepper', 'Paprika', 'Cumin', 'Garlic powder', 'Onion powder',
-
-    // Pantry Staples
-    'Olive oil', 'Vegetable oil', 'Vinegar', 'Soy sauce', 'Honey', 'Sugar',
-    'Baking powder', 'Vanilla extract', 'Canned tomatoes', 'Coconut oil',
-
-    // Fruits
-    'Apples', 'Bananas', 'Oranges', 'Lemons', 'Limes', 'Berries', 'Avocados',
-
-    // Frozen Items
-    'Frozen peas', 'Frozen corn', 'Frozen berries', 'Frozen vegetables',
-  ];
-
-  static List<String> searchIngredients(String query) {
-    if (query.isEmpty) return [];
-
-    final lowercaseQuery = query.toLowerCase();
-
-    List<String> exactMatches = _ingredientDatabase
-        .where(
-          (ingredient) => ingredient.toLowerCase().startsWith(lowercaseQuery),
-        )
-        .toList();
-
-    List<String> partialMatches = _ingredientDatabase
-        .where(
-          (ingredient) =>
-              ingredient.toLowerCase().contains(lowercaseQuery) &&
-              !ingredient.toLowerCase().startsWith(lowercaseQuery),
-        )
-        .toList();
-
-    List<String> allMatches = [...exactMatches, ...partialMatches];
-    return allMatches.take(8).toList();
-  }
-}
+import '../services/pantry_service.dart';
 
 class AddIngredientsScreen extends StatefulWidget {
   const AddIngredientsScreen({super.key});
@@ -85,17 +13,10 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
   final TextEditingController customIngredientController =
       TextEditingController();
 
-  // List to store user's pantry items (dynamic - can be loaded from database)
-  List<String> pantryItems = [
-    'Beef',
-    'Chicken',
-    'Carrot',
-    'Eggs',
-    'Milk',
-    'Bread',
-  ];
+  List<String> savedPantryList = []; // Saved in Firebase database
+  List<String> tempPantryList = []; // current session
 
-  // Predefined common ingredients (dynamic - user can add/edit/delete)
+  // Predefined common ingredients
   List<String> commonIngredients = [
     'Chicken',
     'Rice',
@@ -111,32 +32,90 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
     'Bread',
   ];
 
+  bool isLoading = false;
+  bool hasInitialized = false;
+  String? loadError;
+
   @override
   void initState() {
     super.initState();
-    // TODO: Load data from Firebase/database
     _loadUserData();
   }
 
-  void _loadUserData() {
-    // TODO: Replace with actual database loading
-    // This would load both pantryItems and commonIngredients from user's saved data
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (loadError != null && hasInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load pantry data: $loadError'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          loadError = null; // Clear the error after showing
+        }
+      });
+    }
   }
 
-  void _saveUserData() {
-    // TODO: Save both lists to Firebase/database
-    // This would save pantryItems and commonIngredients to user's profile
+  // Load saved pantry data from Firebase and populate tempPantryList for editing
+  void _loadUserData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      savedPantryList = await PantryService.loadPantryItems();
+      if (savedPantryList.isEmpty) {
+        // Set default items if no saved data exists
+        savedPantryList = ['Eggs', 'Milk', 'Pork', 'Beef'];
+      }
+      // Copy saved list to temp list for editing
+      tempPantryList = List<String>.from(savedPantryList);
+    } catch (e) {
+      // On error, use default items
+      savedPantryList = ['Eggs', 'Milk', 'Pork', 'Beef'];
+      tempPantryList = List<String>.from(savedPantryList);
+
+      // Store error to show later when context is available
+      loadError = e.toString();
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          hasInitialized = true;
+        });
+      }
+    }
+  }
+
+  // Save pantry data to Firebase
+  Future<void> _saveUserData() async {
+    try {
+      await PantryService.savePantryItems(savedPantryList);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save pantry: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _addCustomIngredient() {
     String ingredient = customIngredientController.text.trim();
-    if (ingredient.isNotEmpty && !pantryItems.contains(ingredient)) {
+    if (ingredient.isNotEmpty && !tempPantryList.contains(ingredient)) {
       setState(() {
-        // Add to pantry only
-        pantryItems.add(ingredient);
+        // Add to temp pantry for editing
+        tempPantryList.add(ingredient);
       });
       customIngredientController.clear();
-      _saveUserData(); // Save changes
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -145,7 +124,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
-    } else if (pantryItems.contains(ingredient)) {
+    } else if (tempPantryList.contains(ingredient)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('This ingredient is already in your pantry!'),
@@ -158,18 +137,17 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
 
   void _toggleCommonIngredient(String ingredient) {
     setState(() {
-      if (pantryItems.contains(ingredient)) {
-        pantryItems.remove(ingredient);
+      if (tempPantryList.contains(ingredient)) {
+        tempPantryList.remove(ingredient);
       } else {
-        pantryItems.add(ingredient);
+        tempPantryList.add(ingredient);
       }
     });
-    _saveUserData(); // Save changes
 
-    String message = pantryItems.contains(ingredient)
+    String message = tempPantryList.contains(ingredient)
         ? '$ingredient added to your pantry!'
         : '$ingredient removed from your pantry!';
-    Color backgroundColor = pantryItems.contains(ingredient)
+    Color backgroundColor = tempPantryList.contains(ingredient)
         ? const Color(0xFF5EAAA8)
         : Colors.red[400]!;
 
@@ -184,9 +162,8 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
 
   void _removeIngredient(String ingredient) {
     setState(() {
-      pantryItems.remove(ingredient);
+      tempPantryList.remove(ingredient);
     });
-    _saveUserData(); // Save changes
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -240,13 +217,12 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                     if (index != -1) {
                       commonIngredients[index] = newIngredient;
                     }
-                    // Update in pantry too if it exists
-                    int pantryIndex = pantryItems.indexOf(oldIngredient);
+                    // Update in temp pantry too if it exists
+                    int pantryIndex = tempPantryList.indexOf(oldIngredient);
                     if (pantryIndex != -1) {
-                      pantryItems[pantryIndex] = newIngredient;
+                      tempPantryList[pantryIndex] = newIngredient;
                     }
                   });
-                  _saveUserData();
                 }
                 Navigator.of(context).pop();
                 editController.dispose();
@@ -259,9 +235,18 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
     );
   }
 
+  // Check if there are unsaved changes
+  bool get hasUnsavedChanges {
+    if (tempPantryList.length != savedPantryList.length) return true;
+    for (String item in tempPantryList) {
+      if (!savedPantryList.contains(item)) return true;
+    }
+    return false;
+  }
+
   // Navigate to Recipe Mixer with pantry ingredients
-  void _searchRecipes() {
-    if (pantryItems.isEmpty) {
+  void _searchRecipes() async {
+    if (tempPantryList.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please add some ingredients to your pantry first!'),
@@ -272,14 +257,33 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
       return;
     }
 
-    // Navigate to Recipe Mixer and pass the pantry ingredients
-    Navigator.pushNamed(
-      context,
-      '/recipe-mixer',
-      arguments: {
-        'pantryIngredients': List<String>.from(pantryItems), // Pass a copy
-      },
-    );
+    setState(() => isLoading = true);
+
+    // Save temp list to Firebase
+    savedPantryList = List<String>.from(tempPantryList);
+
+    try {
+      await _saveUserData();
+
+      if (!mounted) return;
+
+      Navigator.pushNamed(
+        context,
+        '/recipe-mixer',
+        arguments: {'pantryIngredients': List<String>.from(savedPantryList)},
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save pantry: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -304,366 +308,436 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              // Top bar with back button and title
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF5EAAA8)),
+                )
+              : Column(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Color(0xFF1E3D36),
-                        size: 28,
-                      ),
-                    ),
-                    const Text(
-                      'Fridge & Pantry',
-                      style: TextStyle(
-                        fontFamily: 'Pacifico',
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3D36),
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-
-              // Content Area
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Edit Your Items subtitle
-                      const Text(
-                        'Edit Your Items',
-                        style: TextStyle(
-                          fontFamily: 'NunitoSans',
-                          fontSize: 18,
-                          color: Color(0xFF1E3D36),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Custom ingredient input
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFB8D4E3),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: customIngredientController,
-                                style: const TextStyle(
-                                  fontFamily: 'NunitoSans',
-                                  fontSize: 15,
-                                  color: Color(0xFF1E3D36),
-                                ),
-                                decoration: const InputDecoration(
-                                  hintText: 'Type your Ingredients',
-                                  hintStyle: TextStyle(
-                                    color: Color(0xFF666666),
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ),
-                                ),
-                                onSubmitted: (_) => _addCustomIngredient(),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: IconButton(
-                                onPressed: _addCustomIngredient,
-                                icon: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFF1E3D36),
-                                  size: 5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Common ingredients checklist grid
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 2.2,
-                            ),
-                        itemCount: commonIngredients.length,
-                        itemBuilder: (context, index) {
-                          final ingredient = commonIngredients[index];
-                          final isSelected = pantryItems.contains(ingredient);
-
-                          return GestureDetector(
-                            onLongPress: () =>
-                                _editCommonIngredient(ingredient),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isSelected
-                                      ? const Color(0xFF5EAAA8)
-                                      : const Color(0xFFB8D4E3),
-                                  foregroundColor: const Color(0xFF1E3D36),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                                onPressed: () =>
-                                    _toggleCommonIngredient(ingredient),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      isSelected
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      size: 16,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : const Color(0xFF1E3D36),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        ingredient,
-                                        style: TextStyle(
-                                          fontFamily: 'NunitoSans',
-                                          fontSize: 11,
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.w600,
-                                          color: isSelected
-                                              ? Colors.white
-                                              : const Color(0xFF1E3D36),
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Your Pantry section
-                      Row(
+                    // Top bar with back button and title
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Color(0xFF1E3D36),
+                              size: 20,
+                            ),
+                          ),
                           const Text(
-                            'Your Pantry',
+                            'Fridge & Pantry',
                             style: TextStyle(
-                              fontFamily: 'NunitoSans',
-                              fontSize: 20,
+                              fontFamily: 'Pacifico',
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF1E3D36),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF5EAAA8),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${pantryItems.length} items',
-                              style: const TextStyle(
-                                fontFamily: 'NunitoSans',
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          const SizedBox(width: 48),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                    ),
 
-                      // Pantry items grid with fixed height
-                      Container(
-                        height: 200, // Fixed height for scrollable area
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: pantryItems.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'No ingredients in your pantry yet.\nSelect from above or add custom ones!',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'NunitoSans',
-                                    fontSize: 14,
-                                    color: Color(0xFF666666),
-                                  ),
-                                ),
-                              )
-                            : GridView.builder(
-                                padding: const EdgeInsets.all(12),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      crossAxisSpacing: 8,
-                                      mainAxisSpacing: 8,
-                                      childAspectRatio: 2.2,
-                                    ),
-                                itemCount: pantryItems.length,
-                                itemBuilder: (context, index) {
-                                  final ingredient = pantryItems[index];
-                                  return Stack(
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF5EAAA8),
-                                            borderRadius: BorderRadius.circular(
-                                              15,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              ingredient,
-                                              style: const TextStyle(
-                                                fontFamily: 'NunitoSans',
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      // Remove button for pantry items
-                                      Positioned(
-                                        top: -2,
-                                        right: -2,
-                                        child: GestureDetector(
-                                          onTap: () =>
-                                              _removeIngredient(ingredient),
-                                          child: Container(
-                                            width: 18,
-                                            height: 18,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                              size: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
+                    // Content Area
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Edit Your Items subtitle
+                            const Text(
+                              'Edit Your Items',
+                              style: TextStyle(
+                                fontFamily: 'NunitoSans',
+                                fontSize: 18,
+                                color: Color(0xFF1E3D36),
                               ),
-                      ),
-                      const SizedBox(height: 32),
+                            ),
+                            const SizedBox(height: 20),
 
-                      // Action buttons
-                      Row(
-                        children: [
-                          // Search Recipe button - UPDATED to use the new method
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF9BCF53),
-                                foregroundColor: const Color(0xFF1E3D36),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                            // Custom ingredient input
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFB8D4E3),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              onPressed: _searchRecipes, // Updated method
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.search, size: 20),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Search Recipe',
-                                    style: TextStyle(
-                                      fontFamily: 'NunitoSans',
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                                  Expanded(
+                                    child: TextField(
+                                      controller: customIngredientController,
+                                      style: const TextStyle(
+                                        fontFamily: 'NunitoSans',
+                                        fontSize: 15,
+                                        color: Color(0xFF1E3D36),
+                                      ),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Type your Ingredients',
+                                        hintStyle: TextStyle(
+                                          color: Color(0xFF666666),
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 16,
+                                        ),
+                                      ),
+                                      onSubmitted: (_) =>
+                                          _addCustomIngredient(),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: IconButton(
+                                      onPressed: _addCustomIngredient,
+                                      icon: const Icon(
+                                        Icons.add,
+                                        color: Color(0xFF1E3D36),
+                                        size: 24, // Fixed size - was 5
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 24),
 
-                          const SizedBox(width: 16),
-                          // Cancel button
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[400],
-                                foregroundColor: const Color(0xFF1E3D36),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontFamily: 'NunitoSans',
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            // Common ingredients checklist grid
+                            SizedBox(
+                              height: 200,
+                              child: GridView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
+                                      childAspectRatio: 3,
+                                    ),
+                                itemCount: commonIngredients.length > 10
+                                    ? 10
+                                    : commonIngredients.length,
+                                itemBuilder: (context, index) {
+                                  final ingredient = commonIngredients[index];
+                                  final isSelected = tempPantryList.contains(
+                                    ingredient,
+                                  );
+
+                                  return GestureDetector(
+                                    onLongPress: () =>
+                                        _editCommonIngredient(ingredient),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isSelected
+                                              ? const Color(0xFF5EAAA8)
+                                              : const Color(0xFFB8D4E3),
+                                          foregroundColor: const Color(
+                                            0xFF1E3D36,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                        ),
+                                        onPressed: () =>
+                                            _toggleCommonIngredient(ingredient),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              isSelected
+                                                  ? Icons.check_circle
+                                                  : Icons.circle_outlined,
+                                              size: 16,
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : const Color(0xFF1E3D36),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                ingredient,
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: 11,
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.bold
+                                                      : FontWeight.w600,
+                                                  color: isSelected
+                                                      ? Colors.white
+                                                      : const Color(0xFF1E3D36),
+                                                ),
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 32),
+
+                            // Your Pantry section
+                            Row(
+                              children: [
+                                const Text(
+                                  'Your Pantry',
+                                  style: TextStyle(
+                                    fontFamily: 'NunitoSans',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E3D36),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF5EAAA8),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${tempPantryList.length} items',
+                                    style: const TextStyle(
+                                      fontFamily: 'NunitoSans',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Add unsaved changes indicator
+                                if (hasUnsavedChanges)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Unsaved',
+                                      style: TextStyle(
+                                        fontFamily: 'NunitoSans',
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Pantry items grid with fixed height
+                            Container(
+                              height: 200, // Fixed height for scrollable area
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: tempPantryList.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                        'No ingredients in your pantry yet.\nSelect from above or add custom ones!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontFamily: 'NunitoSans',
+                                          fontSize: 14,
+                                          color: Color(0xFF666666),
+                                        ),
+                                      ),
+                                    )
+                                  : GridView.builder(
+                                      padding: const EdgeInsets.all(12),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: 8,
+                                            mainAxisSpacing: 8,
+                                            childAspectRatio:
+                                                2.5, // Increased from 2.2
+                                          ),
+                                      itemCount: tempPantryList.length,
+                                      itemBuilder: (context, index) {
+                                        final ingredient =
+                                            tempPantryList[index];
+                                        return Stack(
+                                          children: [
+                                            Container(
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF5EAAA8),
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                              ),
+                                              child: Center(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8.0,
+                                                        vertical: 4.0,
+                                                      ),
+                                                  child: Text(
+                                                    ingredient,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'NunitoSans',
+                                                      fontSize:
+                                                          10, // Reduced from 11
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            // Remove button for pantry items
+                                            Positioned(
+                                              top: 2,
+                                              right: 2,
+                                              child: GestureDetector(
+                                                onTap: () => _removeIngredient(
+                                                  ingredient,
+                                                ),
+                                                child: Container(
+                                                  width: 16,
+                                                  height: 16,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        color: Colors.red,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                  child: const Icon(
+                                                    Icons.close,
+                                                    color: Colors.white,
+                                                    size: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Action buttons
+                            Row(
+                              children: [
+                                // Search Recipe button
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF9BCF53),
+                                      foregroundColor: const Color(0xFF1E3D36),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                    ),
+                                    onPressed: _searchRecipes,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.search, size: 20),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            hasUnsavedChanges
+                                                ? 'Save & Search Recipe'
+                                                : 'Search Recipe',
+                                            style: const TextStyle(
+                                              fontFamily: 'NunitoSans',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 16),
+                                // Cancel button
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey[400],
+                                      foregroundColor: const Color(0xFF1E3D36),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      // Reset temp list to saved list
+                                      setState(() {
+                                        tempPantryList = List<String>.from(
+                                          savedPantryList,
+                                        );
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                    child: Flexible(
+                                      child: Text(
+                                        hasUnsavedChanges
+                                            ? 'Discard Changes'
+                                            : 'Cancel',
+                                        style: const TextStyle(
+                                          fontFamily: 'NunitoSans',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );

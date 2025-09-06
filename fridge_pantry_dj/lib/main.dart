@@ -15,6 +15,7 @@ import 'screens/06_add_ingredients_screen.dart';
 import 'screens/07_recipe_mixer_screen.dart';
 import 'screens/07.1_recipe_viewer_screen.dart';
 import 'screens/07.2_saved_recipe_screen.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // where  app starts running
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/recipe-mixer': (_) => const RecipeMixerScreen(),
         '/recipe-viewer': (_) => const RecipeViewerScreen(),
         '/recipe-saved': (_) => const SavedRecipesScreen(),
+
         '/nutripal': (_) => const NutripalScreen(),
         '/shop-around': (_) => const ShopAroundScreen(),
         '/magic-recommendations': (_) => const MagicRecommendationsScreen(),
