@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; 
+import 'dart:convert';
 
 class RecipeViewerScreen extends StatefulWidget {
   const RecipeViewerScreen({super.key});
@@ -125,6 +125,37 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
         isFavorited = true;
       });
     }
+  }
+
+  void _navigateToNutriPal() {
+    if (recipe == null) return;
+
+    // Create ingredient map with proper quantity and ingredient separation
+    Map<String, String> ingredientMap = {};
+
+    for (int i = 1; i <= 20; i++) {
+      final ingredient = recipe!['strIngredient$i'];
+      final measure = recipe!['strMeasure$i'];
+
+      if (ingredient != null && ingredient.toString().trim().isNotEmpty) {
+        final cleanIngredient = ingredient.toString().trim();
+        final cleanMeasure = measure?.toString().trim() ?? '';
+
+        // Store as "ingredient_name": "quantity"
+        ingredientMap[cleanIngredient] = cleanMeasure;
+      }
+    }
+
+    final recipeData = {
+      'recipeName': recipe!['strMeal'] ?? 'Unknown Recipe',
+      'ingredientMap': ingredientMap,
+      'instructions': _getInstructions(),
+      'category': recipe!['strCategory'] ?? 'Unknown',
+      'area': recipe!['strArea'] ?? 'Unknown',
+      'fromRecipeViewer': true,
+    };
+
+    Navigator.pushNamed(context, '/nutripal', arguments: recipeData);
   }
 
   List<Map<String, String>> _getIngredients() {
@@ -259,6 +290,8 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
+
+                            // Action buttons row
                             Row(
                               children: [
                                 ElevatedButton.icon(
@@ -269,37 +302,82 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                                         : Icons.favorite_border,
                                     color: Colors.white,
                                   ),
-                                  label: Text(isFavorited ? 'Saved' : 'Save'),
+                                  label: Text(
+                                    isFavorited ? 'Saved' : 'Save',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF5EAAA8),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                ElevatedButton.icon(
+                                  onPressed: _navigateToNutriPal,
+                                  icon: const Icon(
+                                    Icons.calculate,
+                                    color: Colors.white,
+                                  ),
+                                  label: const Text(
+                                    'Analyze Nutrition',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE91E63),
+                                    foregroundColor: Colors.white,
                                   ),
                                 ),
                               ],
                             ),
+
                             const SizedBox(height: 16),
-                            Text(
+                            const Text(
                               'Ingredients',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E3D36),
                               ),
                             ),
+                            const SizedBox(height: 8),
                             ..._getIngredients().map(
-                              (ing) => Text(
-                                '${ing['measure']} ${ing['ingredient']}',
+                              (ing) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: Text(
+                                  '• ${ing['measure']} ${ing['ingredient']}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF2D5A54),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Text(
+                            const Text(
                               'Instructions',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E3D36),
                               ),
                             ),
+                            const SizedBox(height: 8),
                             ..._getInstructions().asMap().entries.map(
-                              (entry) =>
-                                  Text('${entry.key + 1}. ${entry.value}'),
+                              (entry) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
+                                child: Text(
+                                  '${entry.key + 1}. ${entry.value}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF2D5A54),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 24),
                             SizedBox(
@@ -308,8 +386,15 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                                 onPressed: () => Navigator.pop(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF5EAAA8),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                 ),
-                                child: const Text('Back to Recipes'),
+                                child: const Text(
+                                  'Back to Recipes',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 32),
