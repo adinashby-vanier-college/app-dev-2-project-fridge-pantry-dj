@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../services/pantry_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -18,6 +18,9 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
     'Vegetarian': false,
     'Dairy Free': false,
   };
+
+  bool isLoadingPantry = false;
+  String? pantryLoadError;
 
   //TODO implement dietary requirement filter
 
@@ -61,22 +64,68 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
           );
         });
       } else {
-        // Fallback to default ingredients if no data is passed
-        setState(() {
-          userIngredients = [
-            'Pasta',
-            'Tomato',
-            'Garlic',
-            'Cheese',
-            'Basil',
-            'Chicken',
-            'Rice',
-            'Eggs',
-          ];
-          hasReceivedIngredients = true;
-        });
-        _fetchRecipesFromAPI();
+        _loadPantryFromFirebase();
       }
+    }
+  }
+
+  Future<void> _loadPantryFromFirebase() async {
+    setState(() {
+      isLoadingPantry = true;
+    });
+
+    try {
+      List<String> savedPantryList = await PantryService.loadPantryItems();
+
+      if (savedPantryList.isEmpty) {
+        // Use default ingredients if no saved data
+        savedPantryList = ['Eggs', 'Milk', 'Pork', 'Beef', 'Pasta', 'Tomato'];
+      }
+
+      setState(() {
+        userIngredients = savedPantryList;
+        hasReceivedIngredients = true;
+        isLoadingPantry = false;
+      });
+
+      _fetchRecipesFromAPI();
+
+      // Show success message
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Loaded ${userIngredients.length} ingredients from your pantry!',
+              ),
+              backgroundColor: const Color(0xFF5EAAA8),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      // Use default ingredients on error
+      setState(() {
+        userIngredients = ['Eggs', 'Milk', 'Pork', 'Beef', 'Pasta', 'Tomato'];
+        hasReceivedIngredients = true;
+        isLoadingPantry = false;
+        pantryLoadError = e.toString();
+      });
+
+      _fetchRecipesFromAPI();
+
+      // Show error message
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load pantry: $e'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      });
     }
   }
 
@@ -462,17 +511,19 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                       const SizedBox(height: 32),
 
                       // Loading indicator or recipes
-                      if (isLoading)
-                        const Center(
+                      if (isLoading || isLoadingPantry)
+                        Center(
                           child: Column(
                             children: [
-                              CircularProgressIndicator(
+                              const CircularProgressIndicator(
                                 color: Color(0xFF5EAAA8),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
-                                'Mixing your perfect recipes...',
-                                style: TextStyle(
+                                isLoadingPantry
+                                    ? 'Loading your pantry ingredients...'
+                                    : 'Mixing your perfect recipes...',
+                                style: const TextStyle(
                                   fontFamily: 'NunitoSans',
                                   fontSize: 16,
                                   color: Color(0xFF1E3D36),
