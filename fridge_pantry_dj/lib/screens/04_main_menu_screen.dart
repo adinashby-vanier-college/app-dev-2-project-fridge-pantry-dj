@@ -42,7 +42,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Enhanced background gradient with more sophisticated colors
     final bgGradient = const LinearGradient(
       colors: [
@@ -56,21 +56,57 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       stops: [0.0, 0.3, 0.7, 1.0],
     );
 
-
     // List of menu items with colorful icons and descriptions
     final menuItems = [
-      _MenuItem('Add Ingredients', Icons.add_circle, '/add-ingredients', 
-        const Color(0xFF4CAF50), 'Track your pantry'),
-      _MenuItem('Recipe Mixer', Icons.restaurant_menu, '/recipe-mixer', 
-        const Color(0xFFFF9800), 'Mix & match recipes'),
-      _MenuItem('Magic Recommendations', Icons.auto_awesome, '/magic-recommendations', 
-        const Color(0xFF9C27B0), 'AI-powered suggestions'),
-      _MenuItem('NutriPal', Icons.favorite, '/nutripal', 
-        const Color(0xFFE91E63), 'Health & nutrition'),
-      _MenuItem('Groceries Around You', Icons.location_on, '/shop-around', 
-        const Color(0xFF2196F3), 'Find nearby stores'),
-      _MenuItem('Settings', Icons.tune, '/settings', 
-        const Color(0xFF607D8B), 'App preferences'),
+      _MenuItem(
+        'Add Ingredients',
+        Icons.add_circle,
+        '/add-ingredients',
+        const Color(0xFF4CAF50),
+        'Track your pantry',
+      ),
+      _MenuItem(
+        'Recipe Mixer',
+        Icons.restaurant_menu,
+        '/recipe-mixer',
+        const Color(0xFFFF9800),
+        'Mix & match recipes',
+      ),
+      _MenuItem(
+        'Magic Recommendations',
+        Icons.auto_awesome,
+        '/magic-recommendations',
+        const Color(0xFF9C27B0),
+        'AI-powered suggestions',
+      ),
+      _MenuItem(
+        'NutriPal',
+        Icons.favorite,
+        '/nutripal',
+        const Color(0xFFE91E63),
+        'Health & nutrition',
+      ),
+      _MenuItem(
+        'Groceries Around You',
+        Icons.location_on,
+        '/shop-around',
+        const Color(0xFF2196F3),
+        'Find nearby stores',
+      ),
+      _MenuItem(
+        'Saved Recipes',
+        Icons.bookmark,
+        '/recipe-saved',
+        const Color(0xFF795548),
+        'View your saved recipes',
+      ),
+      _MenuItem(
+        'Settings',
+        Icons.tune,
+        '/settings',
+        const Color(0xFF607D8B),
+        'App preferences',
+      ),
     ];
 
     Future<void> signOut() async {
@@ -98,7 +134,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         Expanded(
                           child: Center(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(25),
@@ -163,22 +202,32 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                             ],
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.logout_rounded, color: Color(0xFFD32F2F), size: 20),
+                            icon: const Icon(
+                              Icons.logout_rounded,
+                              color: Color(0xFFD32F2F),
+                              size: 20,
+                            ),
                             tooltip: 'Sign out',
                             onPressed: signOut,
                             padding: const EdgeInsets.all(8),
-                            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Compact welcome message
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(16),
@@ -191,7 +240,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user?.displayName != null && user!.displayName!.isNotEmpty
+                            user?.displayName != null &&
+                                    user!.displayName!.isNotEmpty
                                 ? 'Hey, ${user!.displayName}! 👋'
                                 : 'Hey there! 👋',
                             style: const TextStyle(
@@ -227,12 +277,13 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final availableHeight = constraints.maxHeight;
-                      final itemHeight = (availableHeight - 20) / 3; // 3 rows with spacing
-                      final itemWidth = (constraints.maxWidth - 8) / 2; // 2 columns with spacing
+                      final itemHeight = (availableHeight - 20) / 3;
+                      final itemWidth = (constraints.maxWidth - 8) / 2;
                       final aspectRatio = itemWidth / itemHeight;
-                      
+
                       return GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics:
+                            const BouncingScrollPhysics(), // allows scrolling with bounce
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 8,
@@ -241,117 +292,131 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         ),
                         itemCount: menuItems.length,
                         itemBuilder: (context, i) {
-                      final item = menuItems[i];
-                      return AnimatedContainer(
-                        duration: Duration(milliseconds: 150 + (i * 75)),
-                        child: Material(
-                          elevation: 0,
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              if (item.route == '/settings') {
-                                await Navigator.pushNamed(context, item.route);
-                                _refreshUserData();
-                              } else {
-                                Navigator.pushNamed(context, item.route);
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: item.color.withOpacity(0.3),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: item.color.withOpacity(0.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, -2),
-                                  ),
-                                ],
-                              ),
-                              child: LayoutBuilder(
-                                builder: (context, itemConstraints) {
-                                  final isCompact = itemConstraints.maxHeight < 120;
-                                  return Padding(
-                                    padding: EdgeInsets.all(isCompact ? 8 : 12),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        // Icon container with responsive sizing
-                                        Container(
-                                          padding: EdgeInsets.all(isCompact ? 8 : 10),
-                                          decoration: BoxDecoration(
-                                            color: item.color.withOpacity(0.15),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: item.color.withOpacity(0.3),
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            item.icon,
-                                            size: isCompact ? 20 : 24,
-                                            color: item.color,
-                                          ),
-                                        ),
-                                        SizedBox(height: isCompact ? 6 : 8),
-                                        // Title with flexible sizing
-                                        Flexible(
-                                          child: Text(
-                                            item.title,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontFamily: 'NunitoSans',
-                                              fontSize: isCompact ? 11 : 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF2D5A54),
-                                              height: 1.1,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(height: isCompact ? 2 : 3),
-                                        // Description with flexible sizing
-                                        Flexible(
-                                          child: Text(
-                                            item.description,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontFamily: 'NunitoSans',
-                                              fontSize: isCompact ? 8 : 9,
-                                              fontWeight: FontWeight.w500,
-                                              color: const Color(0xFF2D5A54).withOpacity(0.7),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                          final item = menuItems[i];
+                          return AnimatedContainer(
+                            duration: Duration(milliseconds: 150 + (i * 75)),
+                            child: Material(
+                              elevation: 0,
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  if (item.route == '/settings') {
+                                    await Navigator.pushNamed(
+                                      context,
+                                      item.route,
+                                    );
+                                    _refreshUserData();
+                                  } else {
+                                    Navigator.pushNamed(context, item.route);
+                                  }
                                 },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: item.color.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: item.color.withOpacity(0.15),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.white.withOpacity(0.8),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, -2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: LayoutBuilder(
+                                    builder: (context, itemConstraints) {
+                                      final isCompact =
+                                          itemConstraints.maxHeight < 120;
+                                      return Padding(
+                                        padding: EdgeInsets.all(
+                                          isCompact ? 8 : 12,
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.all(
+                                                isCompact ? 8 : 10,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: item.color.withOpacity(
+                                                  0.15,
+                                                ),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: item.color.withOpacity(
+                                                    0.3,
+                                                  ),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: Icon(
+                                                item.icon,
+                                                size: isCompact ? 20 : 24,
+                                                color: item.color,
+                                              ),
+                                            ),
+                                            SizedBox(height: isCompact ? 6 : 8),
+                                            Flexible(
+                                              child: Text(
+                                                item.title,
+                                                textAlign: TextAlign.center,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: isCompact ? 11 : 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(
+                                                    0xFF2D5A54,
+                                                  ),
+                                                  height: 1.1,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: isCompact ? 2 : 3),
+                                            Flexible(
+                                              child: Text(
+                                                item.description,
+                                                textAlign: TextAlign.center,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: isCompact ? 8 : 9,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: const Color(
+                                                    0xFF2D5A54,
+                                                  ).withOpacity(0.7),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
+                          );
                         },
                       );
                     },
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 8),
             ],
           ),
