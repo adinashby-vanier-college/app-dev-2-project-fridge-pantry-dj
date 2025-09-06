@@ -12,18 +12,8 @@ class RecipeMixerScreen extends StatefulWidget {
 }
 
 class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
-  // Dietary preference
-  Map<String, bool> dietaryPreferences = {
-    'Gluten Free': false,
-    'Vegan': false,
-    'Vegetarian': false,
-    'Dairy Free': false,
-  };
-
   bool isLoadingPantry = false;
   String? pantryLoadError;
-
-  //TODO implement dietary requirement filter
 
   // User ingredients from Add Ingredients page
   List<String> userIngredients = [];
@@ -270,15 +260,6 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
     });
   }
 
-  //Re-fetches recipes when user clicks "Mix Recipes" button.
-  void _searchRecipes() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    await _fetchRecipesFromAPI();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -417,51 +398,6 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Dietary Requirements Section
-                      const Text(
-                        'Dietary Requirements',
-                        style: TextStyle(
-                          fontFamily: 'NunitoSans',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E3D36),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Dietary checkboxes
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        children: dietaryPreferences.entries.map((entry) {
-                          return FilterChip(
-                            label: Text(
-                              entry.key,
-                              style: TextStyle(
-                                fontFamily: 'NunitoSans',
-                                fontWeight: FontWeight.w600,
-                                color: entry.value
-                                    ? Colors.white
-                                    : const Color(0xFF1E3D36),
-                              ),
-                            ),
-                            selected: entry.value,
-                            onSelected: (selected) {
-                              setState(() {
-                                dietaryPreferences[entry.key] = selected;
-                              });
-                            },
-                            backgroundColor: const Color(0xFFB8D4E3),
-                            selectedColor: const Color(0xFF5EAAA8),
-                            checkmarkColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
                       // Surprise Me Button
                       Container(
                         width: double.infinity,
@@ -513,31 +449,6 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Search button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5EAAA8),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: isLoading ? null : _searchRecipes,
-                          child: const Text(
-                            'Mix Recipes 🎵',
-                            style: TextStyle(
-                              fontFamily: 'NunitoSans',
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
                       // Loading indicator or recipes
                       if (isLoading || isLoadingPantry)
                         Center(
@@ -581,7 +492,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Try removing some dietary filters or adding more ingredients!',
+                                'Try removing or adding more ingredients!',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontFamily: 'NunitoSans',
