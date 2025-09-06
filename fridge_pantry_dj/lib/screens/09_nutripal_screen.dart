@@ -217,20 +217,19 @@ class _NutripalScreenState extends State<NutripalScreen> {
     return enhancedMessage;
   }
 
-  String _formatAIResponse(String response) {
-    // Fix encoding issues and clean up formatting
+  String _formatAIResponse(String response) { 
     List<String> lines = response.split('\n');
     String formatted = '';
     int bulletCount = 1;
     for (String line in lines) {
       String cleanLine = line
-          .replaceAll('â¢', '•') // Fix encoded bullet points
-          .replaceAll('â€¢', '•') // Another encoding variant
-          .replaceAll('*', '•') // Convert asterisks to bullets
-          .replaceAll('- ', '• ') // Convert dashes to bullets
-          .replaceAll('**', '') // Remove markdown bold
-          .replaceAll('\n\n\n', '\n\n') // Remove extra line breaks
-          .replaceAll('âœ"', '✓') // Fix checkmarks if any
+          .replaceAll('â¢', '•')  
+          .replaceAll('â€¢', '•')  
+          .replaceAll('*', '•')  
+          .replaceAll('- ', '• ')  
+          .replaceAll('**', '') 
+          .replaceAll('\n\n\n', '\n\n')  
+          .replaceAll('âœ"', '✓')  
           .trim();
       if (cleanLine.isNotEmpty && line.contains(RegExp(r'[â¢â€¢*-]'))) {
         formatted += '${bulletCount}. $cleanLine\n';
@@ -327,7 +326,7 @@ class _NutripalScreenState extends State<NutripalScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header section with fixed height
+              // Header section 
               Container(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -470,7 +469,7 @@ class _NutripalScreenState extends State<NutripalScreen> {
                 ),
               ),
 
-              // Expandable chat area
+              // chat area
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),

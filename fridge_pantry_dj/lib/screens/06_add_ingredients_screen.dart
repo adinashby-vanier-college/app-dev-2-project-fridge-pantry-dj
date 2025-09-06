@@ -55,7 +55,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
               backgroundColor: Colors.orange,
             ),
           );
-          loadError = null; // Clear the error after showing
+          loadError = null; 
         }
       });
     }
@@ -398,7 +398,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       icon: const Icon(
                                         Icons.add,
                                         color: Color(0xFF1E3D36),
-                                        size: 24, // Fixed size - was 5
+                                        size: 24,
                                       ),
                                     ),
                                   ),
@@ -577,7 +577,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                             crossAxisSpacing: 8,
                                             mainAxisSpacing: 8,
                                             childAspectRatio:
-                                                2.5, // Increased from 2.2
+                                                2.5,
                                           ),
                                       itemCount: tempPantryList.length,
                                       itemBuilder: (context, index) {
@@ -605,7 +605,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                                     style: const TextStyle(
                                                       fontFamily: 'NunitoSans',
                                                       fontSize:
-                                                          10, // Reduced from 11
+                                                          10,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.white,

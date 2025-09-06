@@ -131,7 +131,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
       List<Map<String, dynamic>> apiRecipes = [];
 
       // Search for recipes using user's ingredients
-      for (String ingredient in userIngredients.take(3)) {
+      for (String ingredient in userIngredients) {
         // Limit to 3 ingredients to avoid too many API calls
         final response = await http.get(
           Uri.parse(
@@ -154,7 +154,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
       }
 
       setState(() {
-        recipes = uniqueRecipes.values.take(6).toList(); // Limit to 6 recipes
+        recipes = uniqueRecipes.values.toList(); // no limit
         isLoading = false;
       });
     } catch (e) {
@@ -474,7 +474,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No recipes found with your current ingredients and filters.',
+                                'No recipes found with your current ingredients.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontFamily: 'NunitoSans',
@@ -496,288 +496,309 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
                           ),
                         )
                       else
-                        // Recipe Results
-                        Column(
-                          children: recipes.map((recipe) {
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: const Color(0x80FFFFFF),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black,
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                        // Recipe count header
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Recipe Results',
+                                style: TextStyle(
+                                  fontFamily: 'NunitoSans',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E3D36),
+                                ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Recipe image
-                                    if (recipe['strMealThumb'] != null)
-                                      Container(
-                                        width: double.infinity,
-                                        height: 120,
-                                        margin: const EdgeInsets.only(
-                                          bottom: 12,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                          child: Image.network(
-                                            recipe['strMealThumb'],
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Container(
-                                                    color: Colors.grey[300],
-                                                    child: const Icon(
-                                                      Icons.image_not_supported,
-                                                      size: 32,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  );
-                                                },
-                                          ),
-                                        ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF9BCF53),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${recipes.length} recipes',
+                                  style: const TextStyle(
+                                    fontFamily: 'NunitoSans',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E3D36),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Recipe Results
+                      Column(
+                        children: recipes.map((recipe) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0x80FFFFFF),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Recipe image
+                                  if (recipe['strMealThumb'] != null)
+                                    Container(
+                                      width: double.infinity,
+                                      height: 120,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
                                       ),
-
-                                    // Recipe title
-                                    Text(
-                                      recipe['strMeal'] ?? 'Unknown Recipe',
-                                      style: const TextStyle(
-                                        fontFamily: 'NunitoSans',
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1E3D36),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        child: Image.network(
+                                          recipe['strMealThumb'],
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(
+                                                    Icons.image_not_supported,
+                                                    size: 32,
+                                                    color: Colors.grey,
+                                                  ),
+                                                );
+                                              },
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
 
-                                    // Category tag (if available)
-                                    if (recipe['strCategory'] != null)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF9BCF53),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          recipe['strCategory'],
-                                          style: const TextStyle(
-                                            fontFamily: 'NunitoSans',
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1E3D36),
-                                          ),
+                                  // Recipe title
+                                  Text(
+                                    recipe['strMeal'] ?? 'Unknown Recipe',
+                                    style: const TextStyle(
+                                      fontFamily: 'NunitoSans',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E3D36),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Category tag (if available)
+                                  if (recipe['strCategory'] != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF9BCF53),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        recipe['strCategory'],
+                                        style: const TextStyle(
+                                          fontFamily: 'NunitoSans',
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E3D36),
                                         ),
                                       ),
-                                    const SizedBox(height: 12),
+                                    ),
+                                  const SizedBox(height: 12),
 
-                                    // Matching ingredients section
-                                    FutureBuilder<List<String>>(
-                                      future: _getRecipeIngredients(
-                                        recipe['idMeal'],
-                                      ),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          final matchingIngredients =
-                                              _getMatchingIngredients(
-                                                snapshot.data!,
-                                              );
+                                  // Matching ingredients section
+                                  FutureBuilder<List<String>>(
+                                    future: _getRecipeIngredients(
+                                      recipe['idMeal'],
+                                    ),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        final matchingIngredients =
+                                            _getMatchingIngredients(
+                                              snapshot.data!,
+                                            );
 
-                                          return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  const Text(
-                                                    'Your ingredients:',
-                                                    style: TextStyle(
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                const Text(
+                                                  'Your ingredients:',
+                                                  style: TextStyle(
+                                                    fontFamily: 'NunitoSans',
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFF1E3D36),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0xFF9BCF53,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          10,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    '${matchingIngredients.length}',
+                                                    style: const TextStyle(
                                                       fontFamily: 'NunitoSans',
-                                                      fontSize: 14,
+                                                      fontSize: 10,
                                                       fontWeight:
-                                                          FontWeight.w600,
+                                                          FontWeight.bold,
                                                       color: Color(0xFF1E3D36),
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 8),
-                                                  Container(
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            if (matchingIngredients.isNotEmpty)
+                                              Wrap(
+                                                spacing: 6,
+                                                runSpacing: 6,
+                                                children: matchingIngredients.map((
+                                                  ingredient,
+                                                ) {
+                                                  return Container(
                                                     padding:
                                                         const EdgeInsets.symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2,
+                                                          horizontal: 8,
+                                                          vertical: 4,
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: const Color(
-                                                        0xFF9BCF53,
+                                                        0xFF5EAAA8,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                            10,
+                                                            12,
                                                           ),
                                                     ),
-                                                    child: Text(
-                                                      '${matchingIngredients.length}',
-                                                      style: const TextStyle(
-                                                        fontFamily:
-                                                            'NunitoSans',
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Color(
-                                                          0xFF1E3D36,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.check,
+                                                          size: 12,
+                                                          color: Colors.white,
                                                         ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-                                              if (matchingIngredients
-                                                  .isNotEmpty)
-                                                Wrap(
-                                                  spacing: 6,
-                                                  runSpacing: 6,
-                                                  children: matchingIngredients.map((
-                                                    ingredient,
-                                                  ) {
-                                                    return Container(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 4,
-                                                          ),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFF5EAAA8,
+                                                        const SizedBox(
+                                                          width: 4,
                                                         ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              12,
-                                                            ),
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          const Icon(
-                                                            Icons.check,
-                                                            size: 12,
+                                                        Text(
+                                                          ingredient,
+                                                          style: const TextStyle(
+                                                            fontFamily:
+                                                                'NunitoSans',
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color: Colors.white,
                                                           ),
-                                                          const SizedBox(
-                                                            width: 4,
-                                                          ),
-                                                          Text(
-                                                            ingredient,
-                                                            style: const TextStyle(
-                                                              fontFamily:
-                                                                  'NunitoSans',
-                                                              fontSize: 11,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                )
-                                              else
-                                                Text(
-                                                  'No matching ingredients found',
-                                                  style: TextStyle(
-                                                    fontFamily: 'NunitoSans',
-                                                    fontSize: 12,
-                                                    color: Colors.grey[600],
-                                                    fontStyle: FontStyle.italic,
-                                                  ),
-                                                ),
-                                            ],
-                                          );
-                                        } else {
-                                          return const SizedBox(
-                                            height: 20,
-                                            child: Center(
-                                              child: SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: Color(0xFF5EAAA8),
+                                                        ),
+                                                      ],
                                                     ),
+                                                  );
+                                                }).toList(),
+                                              )
+                                            else
+                                              Text(
+                                                'No matching ingredients found',
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      } else {
+                                        return const SizedBox(
+                                          height: 20,
+                                          child: Center(
+                                            child: SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xFF5EAAA8),
                                               ),
                                             ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(height: 16),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
 
-                                    // View Recipe button
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF5EAAA8,
-                                          ),
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
+                                  // View Recipe button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFF5EAAA8,
+                                        ),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
                                           ),
                                         ),
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                            context,
-                                            '/recipe-viewer',
-                                            arguments: {
-                                              'recipeId': recipe['idMeal'],
-                                            },
-                                          );
-                                        },
-                                        child: const Text(
-                                          'View Recipe',
-                                          style: TextStyle(
-                                            fontFamily: 'NunitoSans',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/recipe-viewer',
+                                          arguments: {
+                                            'recipeId': recipe['idMeal'],
+                                          },
+                                        );
+                                      },
+                                      child: const Text(
+                                        'View Recipe',
+                                        style: TextStyle(
+                                          fontFamily: 'NunitoSans',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
 
                       const SizedBox(height: 24),
 

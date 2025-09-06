@@ -23,7 +23,7 @@ class MealApiService {
     }
   }
 
-  // Fetch common/popular ingredients (first 30)
+  //
   static Future<List<String>> fetchCommonIngredients() async {
     final allIngredients = await fetchAllIngredients();
     return allIngredients.take(30).toList();
