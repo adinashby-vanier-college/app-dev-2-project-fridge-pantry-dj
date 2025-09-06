@@ -676,7 +676,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                         Flexible(
                                           child: Text(
                                             hasUnsavedChanges
-                                                ? 'Save & Search Recipe'
+                                                ? 'Search Recipe'
                                                 : 'Search Recipe',
                                             style: const TextStyle(
                                               fontFamily: 'NunitoSans',
