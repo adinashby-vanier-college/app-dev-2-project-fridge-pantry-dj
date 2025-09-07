@@ -55,7 +55,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
               backgroundColor: Colors.orange,
             ),
           );
-          loadError = null; 
+          loadError = null;
         }
       });
     }
@@ -330,7 +330,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                 )
               : Column(
                   children: [
-                    // Enhanced top bar
+                    // Enhanced top bar (matching SavedRecipesScreen)
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                       child: Row(
@@ -399,7 +399,6 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
                     // Content Area
@@ -409,13 +408,10 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Welcome message
+                            // Welcome message (matching style)
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(16),
@@ -451,27 +447,31 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 ],
                               ),
                             ),
-
                             const SizedBox(height: 20),
 
-                            // Custom ingredient input with improved styling
+                            // Custom ingredient input (matching style)
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: const Color(
-                                    0xFF4CAF50,
+                                    0xFF795548,
                                   ).withOpacity(0.3),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: const Color(
-                                      0xFF4CAF50,
+                                      0xFF795548,
                                     ).withOpacity(0.15),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, -2),
                                   ),
                                 ],
                               ),
@@ -504,22 +504,16 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                     margin: const EdgeInsets.only(right: 8),
                                     decoration: BoxDecoration(
                                       color: const Color(
-                                        0xFF4CAF50,
-                                      ).withOpacity(0.15),
+                                        0xFF795548,
+                                      ).withOpacity(0.1),
                                       shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(
-                                          0xFF4CAF50,
-                                        ).withOpacity(0.3),
-                                        width: 1.5,
-                                      ),
                                     ),
                                     child: IconButton(
                                       onPressed: _addCustomIngredient,
                                       icon: const Icon(
-                                        Icons.add,
-                                        color: Color(0xFF1E3D36),
-                                        size: 24,
+                                        Icons.add_rounded,
+                                        color: Color(0xFF795548),
+                                        size: 20,
                                       ),
                                       padding: const EdgeInsets.all(8),
                                     ),
@@ -527,23 +521,32 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 20),
 
-                            const SizedBox(height: 24),
-
-                            // Common ingredients checklist grid
+                            // Common ingredients section (reduced height)
+                            const Text(
+                              'Quick Add',
+                              style: TextStyle(
+                                fontFamily: 'NunitoSans',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E3D36),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
                             SizedBox(
-                              height: 200,
+                              height: 130, // Reduced from 200
                               child: GridView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 gridDelegate:
                                     const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 12,
-                                      mainAxisSpacing: 12,
-                                      childAspectRatio: 3,
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 8,
+                                      mainAxisSpacing: 8,
+                                      childAspectRatio: 2.8,
                                     ),
-                                itemCount: commonIngredients.length > 10
-                                    ? 10
+                                itemCount: commonIngredients.length > 9
+                                    ? 9
                                     : commonIngredients.length,
                                 itemBuilder: (context, index) {
                                   final ingredient = commonIngredients[index];
@@ -554,58 +557,60 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                   return GestureDetector(
                                     onLongPress: () =>
                                         _editCommonIngredient(ingredient),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isSelected
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFF5EAAA8)
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(15),
+                                        border: Border.all(
+                                          color: isSelected
                                               ? const Color(0xFF5EAAA8)
-                                              : const Color(0xFFB8D4E3),
-                                          foregroundColor: const Color(
-                                            0xFF1E3D36,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.all(8),
+                                              : const Color(
+                                                  0xFF795548,
+                                                ).withOpacity(0.3),
+                                          width: 1.5,
                                         ),
-                                        onPressed: () =>
-                                            _toggleCommonIngredient(ingredient),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              isSelected
-                                                  ? Icons.check_circle
-                                                  : Icons.circle_outlined,
-                                              size: 16,
-                                              color: isSelected
-                                                  ? Colors.white
-                                                  : const Color(0xFF1E3D36),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                ingredient,
-                                                style: TextStyle(
-                                                  fontFamily: 'NunitoSans',
-                                                  fontSize: 11,
-                                                  fontWeight: isSelected
-                                                      ? FontWeight.bold
-                                                      : FontWeight.w600,
-                                                  color: isSelected
-                                                      ? Colors.white
-                                                      : const Color(0xFF1E3D36),
-                                                ),
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                (isSelected
+                                                        ? const Color(
+                                                            0xFF5EAAA8,
+                                                          )
+                                                        : const Color(
+                                                            0xFF795548,
+                                                          ))
+                                                    .withOpacity(0.15),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _toggleCommonIngredient(
+                                            ingredient,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              ingredient,
+                                              style: TextStyle(
+                                                fontFamily: 'NunitoSans',
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : const Color(0xFF1E3D36),
                                               ),
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -613,9 +618,9 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
 
-                            // Your Pantry section
+                            // Your Pantry section (expanded)
                             Row(
                               children: [
                                 const Text(
@@ -623,7 +628,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                   style: TextStyle(
                                     fontFamily: 'NunitoSans',
                                     fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                     color: Color(0xFF1E3D36),
                                   ),
                                 ),
@@ -648,7 +653,6 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                // Add unsaved changes indicator
                                 if (hasUnsavedChanges)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -673,34 +677,87 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Pantry items grid with fixed height
+                            // Pantry items container (increased height)
                             Container(
-                              height: 200, // Fixed height for scrollable area
+                              height: 280, // Increased from 200
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF795548,
+                                  ).withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF795548,
+                                    ).withOpacity(0.15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, -2),
+                                  ),
+                                ],
                               ),
                               child: tempPantryList.isEmpty
-                                  ? const Center(
-                                      child: Text(
-                                        'No ingredients in your pantry yet.\nSelect from above or add custom ones!',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontFamily: 'NunitoSans',
-                                          fontSize: 14,
-                                          color: Color(0xFF666666),
-                                        ),
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFF795548,
+                                              ).withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.kitchen,
+                                              size: 40,
+                                              color: Color(0xFF795548),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          const Text(
+                                            'Your pantry is empty',
+                                            style: TextStyle(
+                                              fontFamily: 'NunitoSans',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF1E3D36),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Add ingredients using the options above',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontFamily: 'NunitoSans',
+                                              fontSize: 12,
+                                              color: const Color(
+                                                0xFF2D5A54,
+                                              ).withOpacity(0.6),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     )
                                   : GridView.builder(
-                                      padding: const EdgeInsets.all(12),
+                                      padding: const EdgeInsets.all(16),
                                       gridDelegate:
                                           const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 3,
-                                            crossAxisSpacing: 8,
-                                            mainAxisSpacing: 8,
-                                            childAspectRatio:
-                                                2.5,
+                                            crossAxisSpacing: 10,
+                                            mainAxisSpacing: 10,
+                                            childAspectRatio: 2.5,
                                           ),
                                       itemCount: tempPantryList.length,
                                       itemBuilder: (context, index) {
@@ -727,8 +784,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                                     ingredient,
                                                     style: const TextStyle(
                                                       fontFamily: 'NunitoSans',
-                                                      fontSize:
-                                                          10,
+                                                      fontSize: 11,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.white,
@@ -741,26 +797,24 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                                 ),
                                               ),
                                             ),
-                                            // Remove button for pantry items
                                             Positioned(
-                                              top: 2,
-                                              right: 2,
+                                              top: 4,
+                                              right: 4,
                                               child: GestureDetector(
                                                 onTap: () => _removeIngredient(
                                                   ingredient,
                                                 ),
                                                 child: Container(
-                                                  width: 16,
-                                                  height: 16,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                        color: Colors.red,
-                                                        shape: BoxShape.circle,
-                                                      ),
+                                                  width: 18,
+                                                  height: 18,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red[400],
+                                                    shape: BoxShape.circle,
+                                                  ),
                                                   child: const Icon(
                                                     Icons.close,
                                                     color: Colors.white,
-                                                    size: 10,
+                                                    size: 12,
                                                   ),
                                                 ),
                                               ),
@@ -770,74 +824,100 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       },
                                     ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
 
-                            // Action buttons
+                            // Action buttons (matching style)
                             Row(
                               children: [
-                                // Search Recipe button
                                 Expanded(
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF9BCF53),
-                                      foregroundColor: const Color(0xFF1E3D36),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(25),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(25),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(
+                                            0xFF9BCF53,
+                                          ).withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
-                                    onPressed: _searchRecipes,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.search, size: 20),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          child: Text(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFF9BCF53,
+                                        ),
+                                        foregroundColor: const Color(
+                                          0xFF1E3D36,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            25,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                      ),
+                                      onPressed: _searchRecipes,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.search, size: 20),
+                                          const SizedBox(width: 8),
+                                          Text(
                                             hasUnsavedChanges
-                                                ? 'Search Recipe'
+                                                ? 'Save & Search'
                                                 : 'Search Recipe',
                                             style: const TextStyle(
                                               fontFamily: 'NunitoSans',
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                             ),
-                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-
                                 const SizedBox(width: 16),
-                                // Cancel button
                                 Expanded(
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.grey[400],
-                                      foregroundColor: const Color(0xFF1E3D36),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(25),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(25),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
-                                    onPressed: () {
-                                      // Reset temp list to saved list
-                                      setState(() {
-                                        tempPantryList = List<String>.from(
-                                          savedPantryList,
-                                        );
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                    child: Flexible(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey[400],
+                                        foregroundColor: const Color(
+                                          0xFF1E3D36,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            25,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          tempPantryList = List<String>.from(
+                                            savedPantryList,
+                                          );
+                                        });
+                                        Navigator.pop(context);
+                                      },
                                       child: Text(
                                         hasUnsavedChanges
                                             ? 'Discard Changes'
@@ -847,7 +927,6 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),
