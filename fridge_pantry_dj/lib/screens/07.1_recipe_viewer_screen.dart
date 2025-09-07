@@ -31,10 +31,12 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (arguments == null || arguments['recipeId'] == null) {
-      setState(() {
-        error = 'No recipe ID provided';
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          error = 'No recipe ID provided';
+          isLoading = false;
+        });
+      }
       return;
     }
 
@@ -49,27 +51,35 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['meals'] != null && data['meals'].isNotEmpty) {
-          setState(() {
-            recipe = data['meals'][0];
-            isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              recipe = data['meals'][0];
+              isLoading = false;
+            });
+          }
         } else {
+          if (mounted) {
+            setState(() {
+              error = 'Recipe not found';
+              isLoading = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
           setState(() {
-            error = 'Recipe not found';
+            error = 'Failed to load recipe';
             isLoading = false;
           });
         }
-      } else {
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
-          error = 'Failed to load recipe';
+          error = 'Error loading recipe: $e';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        error = 'Error loading recipe: $e';
-        isLoading = false;
-      });
     }
   }
 
@@ -83,21 +93,30 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
 
     final recipeId = arguments['recipeId'];
 
-    final snapshot = await dbRef
-        .child('users/${user.uid}/favorites/$recipeId')
-        .get();
+    try {
+      final snapshot = await dbRef
+          .child('users/${user.uid}/favorites/$recipeId')
+          .get();
 
-    setState(() {
-      isFavorited = snapshot.exists;
-    });
+      if (mounted) {
+        setState(() {
+          isFavorited = snapshot.exists;
+        });
+      }
+    } catch (e) {
+      // Handle error silently or log it
+      print('Error checking favorite status: $e');
+    }
   }
 
   Future<void> _toggleFavorite() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to bookmark')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to bookmark')),
+        );
+      }
       return;
     }
 
@@ -107,23 +126,35 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
 
     final recipeId = arguments['recipeId'];
 
-    if (isFavorited) {
-      // remove favorite
-      await dbRef.child('users/${user.uid}/favorites/$recipeId').remove();
-      setState(() {
-        isFavorited = false;
-      });
-    } else {
-      // save favorite
-      await dbRef.child('users/${user.uid}/favorites/$recipeId').set({
-        'recipeId': recipeId,
-        'title': recipe!['strMeal'],
-        'thumbnail': recipe!['strMealThumb'],
-        'timestamp': DateTime.now().toIso8601String(),
-      });
-      setState(() {
-        isFavorited = true;
-      });
+    try {
+      if (isFavorited) {
+        // remove favorite
+        await dbRef.child('users/${user.uid}/favorites/$recipeId').remove();
+        if (mounted) {
+          setState(() {
+            isFavorited = false;
+          });
+        }
+      } else {
+        // save favorite
+        await dbRef.child('users/${user.uid}/favorites/$recipeId').set({
+          'recipeId': recipeId,
+          'title': recipe!['strMeal'],
+          'thumbnail': recipe!['strMealThumb'],
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+        if (mounted) {
+          setState(() {
+            isFavorited = true;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating favorite: $e')));
+      }
     }
   }
 
@@ -416,7 +447,7 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                                               size: 18,
                                             ),
                                             label: const Text(
-                                              'NutriPal',
+                                              'Analyze',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontFamily: 'NunitoSans',

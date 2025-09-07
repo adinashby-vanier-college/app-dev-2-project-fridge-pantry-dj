@@ -38,6 +38,8 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
         value['recipeId'] = e.key;
         return value;
       }).toList();
+    } else {
+      favorites = []; // Clear the list if no favorites exist
     }
 
     setState(() {
@@ -45,12 +47,24 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
     });
   }
 
-  void _openRecipe(String recipeId) {
-    Navigator.pushNamed(
+  Future<void> _openRecipe(String recipeId) async {
+    // Navigate to recipe viewer and wait for result
+    await Navigator.pushNamed(
       context,
       '/recipe-viewer',
       arguments: {'recipeId': recipeId},
     );
+
+    // Refresh the favorites list when returning from recipe viewer
+    setState(() {
+      isLoading = true;
+    });
+    await _loadFavorites();
+  }
+
+  // Pull-to-refresh functionality
+  Future<void> _onRefresh() async {
+    await _loadFavorites();
   }
 
   @override
@@ -231,170 +245,178 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                           ],
                         ),
                       )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: ListView.builder(
-                          itemCount: favorites.length,
-                          itemBuilder: (context, index) {
-                            final recipe = favorites[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(
-                                    0xFF795548,
-                                  ).withOpacity(0.3),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
+                    : RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        color: const Color(0xFF5EAAA8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: favorites.length,
+                            itemBuilder: (context, index) {
+                              final recipe = favorites[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
                                     color: const Color(
                                       0xFF795548,
-                                    ).withOpacity(0.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    ).withOpacity(0.3),
+                                    width: 1.5,
                                   ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, -2),
-                                  ),
-                                ],
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () => _openRecipe(recipe['recipeId']),
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Row(
-                                      children: [
-                                        // Recipe image or icon
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF795548,
+                                      ).withOpacity(0.15),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.8),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, -2),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () =>
+                                        _openRecipe(recipe['recipeId']),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        children: [
+                                          // Recipe image or icon
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(
+                                                  0xFF795548,
+                                                ).withOpacity(0.2),
+                                                width: 1,
+                                              ),
                                             ),
-                                            border: Border.all(
-                                              color: const Color(
-                                                0xFF795548,
-                                              ).withOpacity(0.2),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: recipe['thumbnail'] != null
-                                              ? ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child: Image.network(
-                                                    recipe['thumbnail'],
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder:
-                                                        (
-                                                          context,
-                                                          error,
-                                                          stackTrace,
-                                                        ) {
-                                                          return Container(
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  const Color(
-                                                                    0xFF795548,
-                                                                  ).withOpacity(
-                                                                    0.1,
-                                                                  ),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12,
-                                                                  ),
-                                                            ),
-                                                            child: const Icon(
-                                                              Icons.restaurant,
-                                                              color: Color(
-                                                                0xFF795548,
-                                                              ),
-                                                              size: 24,
-                                                            ),
-                                                          );
-                                                        },
-                                                  ),
-                                                )
-                                              : Container(
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0xFF795548,
-                                                    ).withOpacity(0.1),
+                                            child: recipe['thumbnail'] != null
+                                                ? ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           12,
                                                         ),
+                                                    child: Image.network(
+                                                      recipe['thumbnail'],
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) {
+                                                            return Container(
+                                                              decoration: BoxDecoration(
+                                                                color:
+                                                                    const Color(
+                                                                      0xFF795548,
+                                                                    ).withOpacity(
+                                                                      0.1,
+                                                                    ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      12,
+                                                                    ),
+                                                              ),
+                                                              child: const Icon(
+                                                                Icons
+                                                                    .restaurant,
+                                                                color: Color(
+                                                                  0xFF795548,
+                                                                ),
+                                                                size: 24,
+                                                              ),
+                                                            );
+                                                          },
+                                                    ),
+                                                  )
+                                                : Container(
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFF795548,
+                                                      ).withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.restaurant,
+                                                      color: Color(0xFF795548),
+                                                      size: 24,
+                                                    ),
                                                   ),
-                                                  child: const Icon(
-                                                    Icons.restaurant,
-                                                    color: Color(0xFF795548),
-                                                    size: 24,
+                                          ),
+                                          const SizedBox(width: 16),
+                                          // Recipe title
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  recipe['title'] ??
+                                                      'Unknown Recipe',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'NunitoSans',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF2D5A54),
                                                   ),
                                                 ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        // Recipe title
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                recipe['title'] ??
-                                                    'Unknown Recipe',
-                                                style: const TextStyle(
-                                                  fontFamily: 'NunitoSans',
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF2D5A54),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Tap to view recipe',
+                                                  style: TextStyle(
+                                                    fontFamily: 'NunitoSans',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: const Color(
+                                                      0xFF2D5A54,
+                                                    ).withOpacity(0.6),
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Tap to view recipe',
-                                                style: TextStyle(
-                                                  fontFamily: 'NunitoSans',
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: const Color(
-                                                    0xFF2D5A54,
-                                                  ).withOpacity(0.6),
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        // Arrow icon
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(
-                                              0xFF795548,
-                                            ).withOpacity(0.1),
-                                            shape: BoxShape.circle,
+                                          // Arrow icon
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFF795548,
+                                              ).withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.arrow_forward_ios_rounded,
+                                              size: 16,
+                                              color: Color(0xFF795548),
+                                            ),
                                           ),
-                                          child: const Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            size: 16,
-                                            color: Color(0xFF795548),
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
               ),

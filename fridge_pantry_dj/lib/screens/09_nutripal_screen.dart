@@ -157,26 +157,14 @@ class _NutripalScreenState extends State<NutripalScreen> {
     final category = _recipeData!['category'] ?? '';
 
     String context = 'I am analyzing a recipe called "$recipeName"';
-    if (category.isNotEmpty) {
-      context += ' (Category: $category)';
-    }
-    context += '. The ingredients with their quantities are: ';
+    if (category.isNotEmpty) context += ' (Category: $category)';
+    context += '. The ingredients with their quantities are:\n';
 
-    int count = 0;
     ingredientMap.forEach((ingredient, quantity) {
-      if (count < 15) {
-        // Limit to avoid token limits
-        context += '$quantity $ingredient';
-        if (count < ingredientMap.length - 1 && count < 14) context += ', ';
-      }
-      count++;
+      context += '- $quantity $ingredient\n';
     });
 
-    if (ingredientMap.length > 15) {
-      context += ' and ${ingredientMap.length - 15} more ingredients';
-    }
-
-    return context + '. ';
+    return context;
   }
 
   String _formatIngredientsForCalculation(String userMessage) {
@@ -218,26 +206,16 @@ class _NutripalScreenState extends State<NutripalScreen> {
   }
 
   String _formatAIResponse(String response) {
-    List<String> lines = response.split('\n');
-    String formatted = '';
-    int bulletCount = 1;
-    for (String line in lines) {
-      String cleanLine = line
-          .replaceAll('â¢', '•')
-          .replaceAll('â€¢', '•')
-          .replaceAll('*', '•')
-          .replaceAll('- ', '• ')
-          .replaceAll('**', '')
-          .replaceAll('\n\n\n', '\n\n')
-          .replaceAll('âœ"', '✓')
-          .trim();
-      if (cleanLine.isNotEmpty && line.contains(RegExp(r'[â¢â€¢*-]'))) {
-        formatted += '${bulletCount}. $cleanLine\n';
-        bulletCount++;
-      } else if (cleanLine.isNotEmpty) {
-        formatted += '$cleanLine\n';
-      }
-    }
+    // Normalize line endings
+    String formatted = response.replaceAll('\r\n', '\n');
+
+    // Replace common encoding issues
+    formatted = formatted
+        .replaceAll('â¢', '•')
+        .replaceAll('â€¢', '•')
+        .replaceAll('âœ"', '✓');
+
+    formatted = formatted.replaceAll(RegExp(r'^\d+\.\s+', multiLine: true), '');
 
     return formatted.trim();
   }
@@ -283,7 +261,9 @@ class _NutripalScreenState extends State<NutripalScreen> {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> data = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
         String rawResponse =
             data['choices'][0]['message']['content'] ??
             'Sorry, I could not process your request.';
