@@ -73,13 +73,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
         'Mix & match recipes',
       ),
       _MenuItem(
-        'Magic Recommendations',
-        Icons.auto_awesome,
-        '/magic-recommendations',
-        const Color(0xFF9C27B0),
-        'AI-powered suggestions',
-      ),
-      _MenuItem(
         'NutriPal',
         Icons.favorite,
         '/nutripal',

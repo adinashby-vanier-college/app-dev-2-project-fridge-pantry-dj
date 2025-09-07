@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fridge_pantry_dj/screens/08_magic_recommendations_screen.dart';
 import 'package:fridge_pantry_dj/screens/09_nutripal_screen.dart';
 import 'package:fridge_pantry_dj/screens/10_shop_around_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -60,7 +59,6 @@ class MyApp extends StatelessWidget {
 
         '/nutripal': (_) => const NutripalScreen(),
         '/shop-around': (_) => const ShopAroundScreen(),
-        '/magic-recommendations': (_) => const MagicRecommendationsScreen(),
       },
     );
   }
