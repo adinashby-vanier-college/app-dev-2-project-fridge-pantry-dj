@@ -299,42 +299,100 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFD1E8E5), // Light mint
-              Color(0xFFA7E9D0), // Soft green
-              Color(0xFF6BB3A8), // Deep teal
+              Color(0xFFF0F9F7), // Very light mint
+              Color(0xFFE6F7F1), // Light mint
+              Color(0xFFB8E6D3), // Soft green
+              Color(0xFF7DD3C0), // Medium teal
             ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
           child: isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF5EAAA8)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF5EAAA8)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading your pantry...',
+                        style: TextStyle(
+                          fontFamily: 'NunitoSans',
+                          fontSize: 16,
+                          color: Color(0xFF1E3D36),
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               : Column(
                   children: [
-                    // Top bar with back button and title
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
+                    // Enhanced top bar
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: Color(0xFF1E3D36),
-                              size: 20,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Color(0xFF1E3D36),
+                                size: 24,
+                              ),
+                              padding: const EdgeInsets.all(8),
                             ),
                           ),
-                          const Text(
-                            'Fridge & Pantry',
-                            style: TextStyle(
-                              fontFamily: 'Pacifico',
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E3D36),
+                          Expanded(
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.4),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  'Fridge & Pantry',
+                                  style: TextStyle(
+                                    fontFamily: 'Pacifico',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1E3D36),
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.white.withOpacity(0.9),
+                                        offset: const Offset(1, 1),
+                                        blurRadius: 3,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 48),
@@ -342,29 +400,80 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                       ),
                     ),
 
+                    const SizedBox(height: 16),
+
                     // Content Area
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Edit Your Items subtitle
-                            const Text(
-                              'Edit Your Items',
-                              style: TextStyle(
-                                fontFamily: 'NunitoSans',
-                                fontSize: 18,
-                                color: Color(0xFF1E3D36),
+                            // Welcome message
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Edit Your Items',
+                                    style: TextStyle(
+                                      fontFamily: 'NunitoSans',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1E3D36),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Add ingredients to find perfect recipes',
+                                    style: TextStyle(
+                                      fontFamily: 'NunitoSans',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(
+                                        0xFF2D5A54,
+                                      ).withOpacity(0.8),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+
                             const SizedBox(height: 20),
 
-                            // Custom ingredient input
+                            // Custom ingredient input with improved styling
                             Container(
                               decoration: BoxDecoration(
-                                color: const Color(0xFFB8D4E3),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF4CAF50,
+                                  ).withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF4CAF50,
+                                    ).withOpacity(0.15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
@@ -383,7 +492,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                         ),
                                         border: InputBorder.none,
                                         contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16,
+                                          horizontal: 20,
                                           vertical: 16,
                                         ),
                                       ),
@@ -391,8 +500,20 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                           _addCustomIngredient(),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF4CAF50,
+                                      ).withOpacity(0.15),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFF4CAF50,
+                                        ).withOpacity(0.3),
+                                        width: 1.5,
+                                      ),
+                                    ),
                                     child: IconButton(
                                       onPressed: _addCustomIngredient,
                                       icon: const Icon(
@@ -400,11 +521,13 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                         color: Color(0xFF1E3D36),
                                         size: 24,
                                       ),
+                                      padding: const EdgeInsets.all(8),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+
                             const SizedBox(height: 24),
 
                             // Common ingredients checklist grid

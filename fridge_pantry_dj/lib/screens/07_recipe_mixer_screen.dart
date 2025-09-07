@@ -240,7 +240,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🎵 Surprise recipe loaded!'),
+          content: Text('ðŸŽµ Surprise recipe loaded!'),
           backgroundColor: Color(0xFF9BCF53),
           duration: Duration(seconds: 2),
         ),
@@ -248,7 +248,7 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No recipes available to surprise you 😔'),
+          content: Text('No recipes available to surprise you ðŸ˜”'),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
