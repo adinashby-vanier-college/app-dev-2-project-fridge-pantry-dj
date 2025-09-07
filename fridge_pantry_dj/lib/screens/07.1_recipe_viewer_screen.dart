@@ -211,40 +211,92 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFD1E8E5), Color(0xFFA7E9D0), Color(0xFF6BB3A8)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF0F9F7), // Very light mint
+              Color(0xFFE6F7F1), // Light mint
+              Color(0xFFB8E6D3), // Soft green
+              Color(0xFF7DD3C0), // Medium teal
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              // Enhanced top bar
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Color(0xFF1E3D36),
-                        size: 28,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Color(0xFF1E3D36),
+                          size: 24,
+                        ),
+                        padding: const EdgeInsets.all(8),
                       ),
                     ),
-                    const Text(
-                      'Recipe',
-                      style: TextStyle(
-                        fontFamily: 'Pacifico',
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3D36),
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Recipe',
+                            style: TextStyle(
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E3D36),
+                              shadows: [
+                                Shadow(
+                                  color: Colors.white.withOpacity(0.9),
+                                  offset: const Offset(1, 1),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 48),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 16),
+
               Expanded(
                 child: isLoading
                     ? const Center(
@@ -267,137 +319,377 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                     : error != null
                     ? Center(child: Text(error!))
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (recipe!['strMealThumb'] != null)
-                              ClipRRect(
+                            // Recipe content with improved styling
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  recipe!['strMealThumb'],
-                                  fit: BoxFit.cover,
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF5EAAA8,
+                                  ).withOpacity(0.3),
+                                  width: 1.5,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF5EAAA8,
+                                    ).withOpacity(0.15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                            const SizedBox(height: 16),
-                            Text(
-                              recipe!['strMeal'] ?? 'Unknown Recipe',
-                              style: const TextStyle(
-                                fontFamily: 'NunitoSans',
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E3D36),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (recipe!['strMealThumb'] != null)
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          recipe!['strMealThumb'],
+                                          width: double.infinity,
+                                          height: 200,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      recipe!['strMeal'] ?? 'Unknown Recipe',
+                                      style: const TextStyle(
+                                        fontFamily: 'NunitoSans',
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF2D5A54),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // Action buttons row with improved styling
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _toggleFavorite,
+                                            icon: Icon(
+                                              isFavorited
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: Colors.white,
+                                              size: 18,
+                                            ),
+                                            label: Text(
+                                              isFavorited ? 'Saved' : 'Save',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'NunitoSans',
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(
+                                                0xFF5EAAA8,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _navigateToNutriPal,
+                                            icon: const Icon(
+                                              Icons.calculate,
+                                              color: Colors.white,
+                                              size: 18,
+                                            ),
+                                            label: const Text(
+                                              'Analyze',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'NunitoSans',
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(
+                                                0xFFE91E63,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
 
-                            // Action buttons row
-                            Row(
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: _toggleFavorite,
-                                  icon: Icon(
-                                    isFavorited
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: Colors.white,
-                                  ),
-                                  label: Text(
-                                    isFavorited ? 'Saved' : 'Save',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF5EAAA8),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                ElevatedButton.icon(
-                                  onPressed: _navigateToNutriPal,
-                                  icon: const Icon(
-                                    Icons.calculate,
-                                    color: Colors.white,
-                                  ),
-                                  label: const Text(
-                                    'Analyze Nutrition',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFE91E63),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+                                    // Ingredients section
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF4CAF50,
+                                        ).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: const Color(
+                                            0xFF4CAF50,
+                                          ).withOpacity(0.3),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFF4CAF50,
+                                                  ).withOpacity(0.15),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.receipt_long,
+                                                  size: 16,
+                                                  color: Color(0xFF4CAF50),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Text(
+                                                'Ingredients',
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF2D5A54),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          ..._getIngredients().map(
+                                            (ing) => Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 2,
+                                                  ),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          top: 6,
+                                                          right: 8,
+                                                        ),
+                                                    width: 4,
+                                                    height: 4,
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                          color: Color(
+                                                            0xFF4CAF50,
+                                                          ),
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${ing['measure']} ${ing['ingredient']}',
+                                                      style: const TextStyle(
+                                                        fontFamily:
+                                                            'NunitoSans',
+                                                        fontSize: 14,
+                                                        color: Color(
+                                                          0xFF2D5A54,
+                                                        ),
+                                                        height: 1.4,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
 
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Ingredients',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E3D36),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ..._getIngredients().map(
-                              (ing) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 2,
-                                ),
-                                child: Text(
-                                  '• ${ing['measure']} ${ing['ingredient']}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF2D5A54),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Instructions',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E3D36),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ..._getInstructions().asMap().entries.map(
-                              (entry) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Text(
-                                  '${entry.key + 1}. ${entry.value}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF2D5A54),
-                                    height: 1.4,
-                                  ),
+                                    // Instructions section
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF2196F3,
+                                        ).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: const Color(
+                                            0xFF2196F3,
+                                          ).withOpacity(0.3),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFF2196F3,
+                                                  ).withOpacity(0.15),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.format_list_numbered,
+                                                  size: 16,
+                                                  color: Color(0xFF2196F3),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Text(
+                                                'Instructions',
+                                                style: TextStyle(
+                                                  fontFamily: 'NunitoSans',
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF2D5A54),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          ..._getInstructions().asMap().entries.map(
+                                            (entry) => Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 4,
+                                                  ),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          top: 2,
+                                                          right: 12,
+                                                        ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFF2196F3,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      '${entry.key + 1}',
+                                                      style: const TextStyle(
+                                                        fontFamily:
+                                                            'NunitoSans',
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      entry.value,
+                                                      style: const TextStyle(
+                                                        fontFamily:
+                                                            'NunitoSans',
+                                                        fontSize: 14,
+                                                        color: Color(
+                                                          0xFF2D5A54,
+                                                        ),
+                                                        height: 1.4,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFF5EAAA8,
+                                          ),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Back to Recipes',
+                                          style: TextStyle(
+                                            fontFamily: 'NunitoSans',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                             const SizedBox(height: 24),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF5EAAA8),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Back to Recipes',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
                           ],
                         ),
                       ),

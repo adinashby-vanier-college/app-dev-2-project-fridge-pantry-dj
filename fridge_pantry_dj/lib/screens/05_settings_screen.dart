@@ -572,43 +572,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFD1E8E5), // Light mint
-              Color(0xFFA7E9D0), // Soft green
-              Color(0xFF6BB3A8), // Deep teal
+              Color(0xFFF0F9F7), // Very light mint
+              Color(0xFFE6F7F1), // Light mint
+              Color(0xFFB8E6D3), // Soft green
+              Color(0xFF7DD3C0), // Medium teal
             ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Top bar with back button and title
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              // Enhanced top bar matching MainMenuScreen style
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Color(0xFF1E3D36),
-                        size: 28,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Color(0xFF1E3D36),
+                          size: 24,
+                        ),
+                        padding: const EdgeInsets.all(8),
                       ),
                     ),
-                    const Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontFamily: 'Pacifico',
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3D36),
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Settings',
+                            style: TextStyle(
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E3D36),
+                              shadows: [
+                                Shadow(
+                                  color: Colors.white.withOpacity(0.9),
+                                  offset: const Offset(1, 1),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 48),
@@ -616,32 +662,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
               // Content Area
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Hey, ${originalName.isEmpty ? 'User' : originalName}',
-                        style: const TextStyle(
-                          fontFamily: 'NunitoSans',
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E3D36),
+                      // Welcome message matching MainMenuScreen style
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hey, ${originalName.isEmpty ? 'User' : originalName}!',
+                              style: const TextStyle(
+                                fontFamily: 'NunitoSans',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E3D36),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Manage Your Account',
+                              style: TextStyle(
+                                fontFamily: 'NunitoSans',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF2D5A54).withOpacity(0.8),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Manage Your Account',
-                        style: TextStyle(
-                          fontFamily: 'NunitoSans',
-                          fontSize: 16,
-                          color: Color(0xFF1E3D36),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
 
                       // User Information Section
                       if (_isEditingInfo) ...[
@@ -650,7 +720,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _buildInfoDisplaySection(),
                       ],
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
                       // Change Password Section
                       if (_isChangingPassword) ...[
@@ -659,10 +729,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _buildPasswordButton(),
                       ],
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
 
                       // Account Actions Section
                       _buildAccountActionsSection(),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -678,20 +749,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF5EAAA8).withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF5EAAA8).withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Personal Information',
-            style: TextStyle(
-              fontFamily: 'NunitoSans',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E3D36),
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5EAAA8).withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF5EAAA8).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.person,
+                  size: 20,
+                  color: Color(0xFF5EAAA8),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Personal Information',
+                style: TextStyle(
+                  fontFamily: 'NunitoSans',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2D5A54),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           _buildInfoRow('Name', nameController.text),
@@ -704,15 +812,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _buildInfoRow('Postcode', postcodeController.text),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _toggleEditInfo,
-            icon: const Icon(Icons.edit, size: 18),
-            label: const Text('Edit Information'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5EAAA8),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _toggleEditInfo,
+              icon: const Icon(Icons.edit, size: 18),
+              label: const Text('Edit Information'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5EAAA8),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
