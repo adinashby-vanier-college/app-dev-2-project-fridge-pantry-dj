@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -15,44 +13,36 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
   final DatabaseReference dbRef = FirebaseDatabase.instance.ref();
   List<Map<String, dynamic>> favorites = [];
   bool isLoading = true;
-  StreamSubscription<DatabaseEvent>? _favoritesSub;
 
   @override
   void initState() {
     super.initState();
-    _listenFavorites();
+    _loadFavorites();
   }
 
-  void _listenFavorites() {
+  Future<void> _loadFavorites() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
-    _favoritesSub = dbRef.child('users/${user.uid}/favorites').onValue.listen((
-      event,
-    ) {
-      final snapshot = event.snapshot;
-      if (snapshot.exists) {
-        final data = Map<String, dynamic>.from(snapshot.value as Map);
-        favorites = data.entries.map((e) {
-          final value = Map<String, dynamic>.from(e.value);
-          value['recipeId'] = e.key;
-          return value;
-        }).toList();
-      } else {
-        favorites = [];
-      }
+    final snapshot = await dbRef.child('users/${user.uid}/favorites').get();
 
-      setState(() => isLoading = false);
+    if (snapshot.exists) {
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      favorites = data.entries.map((e) {
+        final value = Map<String, dynamic>.from(e.value);
+        value['recipeId'] = e.key;
+        return value;
+      }).toList();
+    }
+
+    setState(() {
+      isLoading = false;
     });
-  }
-
-  @override
-  void dispose() {
-    _favoritesSub?.cancel();
-    super.dispose();
   }
 
   void _openRecipe(String recipeId) {

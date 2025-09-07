@@ -217,19 +217,19 @@ class _NutripalScreenState extends State<NutripalScreen> {
     return enhancedMessage;
   }
 
-  String _formatAIResponse(String response) { 
+  String _formatAIResponse(String response) {
     List<String> lines = response.split('\n');
     String formatted = '';
     int bulletCount = 1;
     for (String line in lines) {
       String cleanLine = line
-          .replaceAll('â¢', '•')  
-          .replaceAll('â€¢', '•')  
-          .replaceAll('*', '•')  
-          .replaceAll('- ', '• ')  
-          .replaceAll('**', '') 
-          .replaceAll('\n\n\n', '\n\n')  
-          .replaceAll('âœ"', '✓')  
+          .replaceAll('â¢', '•')
+          .replaceAll('â€¢', '•')
+          .replaceAll('*', '•')
+          .replaceAll('- ', '• ')
+          .replaceAll('**', '')
+          .replaceAll('\n\n\n', '\n\n')
+          .replaceAll('âœ"', '✓')
           .trim();
       if (cleanLine.isNotEmpty && line.contains(RegExp(r'[â¢â€¢*-]'))) {
         formatted += '${bulletCount}. $cleanLine\n';
@@ -326,7 +326,7 @@ class _NutripalScreenState extends State<NutripalScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header section 
+              // Header section
               Container(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

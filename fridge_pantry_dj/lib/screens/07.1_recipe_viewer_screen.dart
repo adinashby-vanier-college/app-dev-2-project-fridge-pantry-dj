@@ -416,7 +416,7 @@ class _RecipeViewerScreenState extends State<RecipeViewerScreen> {
                                               size: 18,
                                             ),
                                             label: const Text(
-                                              'Analyze',
+                                              'NutriPal',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontFamily: 'NunitoSans',
