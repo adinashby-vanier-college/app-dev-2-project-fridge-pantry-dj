@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _postcodeController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -31,7 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final postcode = _postcodeController.text.trim();
-    
+
     if (name.isEmpty || email.isEmpty || password.isEmpty || postcode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill out all fields')),
@@ -41,11 +42,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
     try {
       // Create the user account
-      UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       // FBRD display name
       await userCredential.user?.updateDisplayName(name);
@@ -56,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         try {
           final database = FirebaseDatabase.instance;
           final userRef = database.ref('users/${userCredential.user!.uid}');
-          
+
           Map<String, dynamic> userData = {
             'name': name,
             'email': email,
@@ -64,12 +62,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'registrationDate': DateTime.now().millisecondsSinceEpoch,
             'preferences': {},
           };
-          
+
           await userRef.set(userData);
         } catch (dbError) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Account created but profile save failed: $dbError')),
+              SnackBar(
+                content: Text(
+                  'Account created but profile save failed: $dbError',
+                ),
+              ),
             );
           }
         }
@@ -94,14 +96,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } else {
         message = 'Failed to sign up: ${e.message ?? e.code}';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } catch (e) {
       // FBRD errors
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save user data: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save user data: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -133,7 +135,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF1E3D36)),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF1E3D36),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -266,8 +271,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: const Color(0xFF1E3D36),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                 ),
 
                 const SizedBox(height: 20),
@@ -316,9 +334,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(
-                    valueColor:
-                    AlwaysStoppedAnimation<Color>(Colors.white),
-                  )
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        )
                       : const Text('sign up'),
                 ),
 

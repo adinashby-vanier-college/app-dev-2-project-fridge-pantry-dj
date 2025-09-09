@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -34,8 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       if (mounted) {
         // Navigate to main menu after successful login
         Navigator.pushReplacementNamed(context, '/main-menu');
@@ -49,9 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         message = 'Failed to sign in: ${e.message ?? e.code}';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -67,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+          await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -78,12 +81,14 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google sign in failed: ${e.message ?? e.code}')),
+        SnackBar(
+          content: Text('Google sign in failed: ${e.message ?? e.code}'),
+        ),
       );
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google sign-in failed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Google sign-in failed')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -115,8 +120,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    icon:
-                    const Icon(Icons.arrow_back, color: Color(0xFF1E3D36)),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF1E3D36),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -222,8 +229,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: const Color(0xFF1E3D36),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true, // hides password characters
+                  obscureText: _obscurePassword,
                 ),
 
                 const SizedBox(height: 32),
@@ -246,9 +266,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(
-                    valueColor:
-                    AlwaysStoppedAnimation<Color>(Colors.white),
-                  )
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        )
                       : const Text('sign in'),
                 ),
 
@@ -268,8 +289,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           text: 'Sign up',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                           recognizer: TapGestureRecognizer()
-                            ..onTap =
-                                () => Navigator.pushNamed(context, '/register'),
+                            ..onTap = () =>
+                                Navigator.pushNamed(context, '/register'),
                         ),
                       ],
                     ),
@@ -315,7 +336,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(40),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 14),
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ],
