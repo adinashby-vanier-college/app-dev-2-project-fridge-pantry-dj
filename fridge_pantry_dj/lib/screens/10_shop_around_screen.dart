@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-
 class ShopAroundScreen extends StatefulWidget {
   const ShopAroundScreen({super.key});
 
@@ -59,9 +58,9 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
       // Groceru checker
       if (showGroceries) {
         final groceries = await _searchNearbyPlaces(
-          coordinates['lat'], 
-          coordinates['lng'], 
-          'grocery_or_supermarket'
+          coordinates['lat'],
+          coordinates['lng'],
+          'grocery_or_supermarket',
         );
         allPlaces.addAll(groceries);
       }
@@ -69,9 +68,9 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
       // Restaurant CHeker
       if (showRestaurants) {
         final restaurants = await _searchNearbyPlaces(
-          coordinates['lat'], 
-          coordinates['lng'], 
-          'restaurant'
+          coordinates['lat'],
+          coordinates['lng'],
+          'restaurant',
         );
         allPlaces.addAll(restaurants);
       }
@@ -90,7 +89,8 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
 
   Future<Map<String, dynamic>?> _geocodePostalCode(String postalCode) async {
     final encodedPostalCode = Uri.encodeComponent(postalCode);
-    final String url = 'https://maps.googleapis.com/maps/api/geocode/json'
+    final String url =
+        'https://maps.googleapis.com/maps/api/geocode/json'
         '?address=$encodedPostalCode&components=country:CA'
         '&key=$_googleApiKey';
 
@@ -99,15 +99,12 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
       debugPrint('Geocoding URL: $url');
       debugPrint('Response status: ${response.statusCode}');
       debugPrint('Response body: ${response.body}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           final location = data['results'][0]['geometry']['location'];
-          return {
-            'lat': location['lat'],
-            'lng': location['lng'],
-          };
+          return {'lat': location['lat'], 'lng': location['lng']};
         } else {
           debugPrint('Geocoding failed. Status: ${data['status']}');
         }
@@ -119,8 +116,12 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
   }
 
   Future<List<Map<String, dynamic>>> _searchNearbyPlaces(
-      double lat, double lng, String type) async {
-    final String url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+    double lat,
+    double lng,
+    String type,
+  ) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=$lat,$lng'
         '&radius=$selectedRadius'
         '&type=$type'
@@ -142,7 +143,9 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
               'name': place['name'] ?? 'Unknown Place',
               'rating': place['rating']?.toDouble() ?? 0.0,
               'vicinity': place['vicinity'] ?? '',
-              'type': type == 'grocery_or_supermarket' ? 'Grocery' : 'Restaurant',
+              'type': type == 'grocery_or_supermarket'
+                  ? 'Grocery'
+                  : 'Restaurant',
               'place_id': place['place_id'],
               'price_level': place['price_level'] ?? 0,
             });
@@ -240,7 +243,10 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    const Text('Radius: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Radius: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     DropdownButton<int>(
                       value: selectedRadius,
                       onChanged: (value) {
@@ -260,7 +266,10 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Row(
                   children: [
                     Checkbox(
@@ -292,65 +301,73 @@ class _ShopAroundScreenState extends State<ShopAroundScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Searching nearby places...'),
-                    ],
-                  ),
-                )
-                    : _places.isEmpty
-                    ? const Center(
-                  child: Text('No places found. Try New postal code.'),
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _places.length,
-                  itemBuilder: (context, index) {
-                    final place = _places[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: place['type'] == 'Grocery' 
-                              ? Colors.green 
-                              : Colors.orange,
-                          child: Icon(
-                            place['type'] == 'Grocery' 
-                                ? Icons.shopping_cart 
-                                : Icons.restaurant,
-                            color: Colors.white,
-                          ),
-                        ),
-                        title: Text(
-                          place['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(place['vicinity']),
-                            Row(
-                              children: [
-                                Text('${place['type']} • '),
-                                if (place['rating'] > 0) ...[
-                                  const Icon(Icons.star, size: 16, color: Colors.amber),
-                                  Text(' ${place['rating'].toStringAsFixed(1)}'),
-                                ] else
-                                  const Text('No rating'),
-                              ],
-                            ),
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Searching nearby places...'),
                           ],
                         ),
-                        trailing: place['price_level'] > 0
-                            ? Text('\$' * place['price_level'])
-                            : null,
+                      )
+                    : _places.isEmpty
+                    ? const Center(
+                        child: Text('No places found. Try New postal code.'),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _places.length,
+                        itemBuilder: (context, index) {
+                          final place = _places[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: place['type'] == 'Grocery'
+                                    ? Colors.green
+                                    : Colors.orange,
+                                child: Icon(
+                                  place['type'] == 'Grocery'
+                                      ? Icons.shopping_cart
+                                      : Icons.restaurant,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              title: Text(
+                                place['name'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(place['vicinity']),
+                                  Row(
+                                    children: [
+                                      Text('${place['type']} • '),
+                                      if (place['rating'] > 0) ...[
+                                        const Icon(
+                                          Icons.star,
+                                          size: 16,
+                                          color: Colors.amber,
+                                        ),
+                                        Text(
+                                          ' ${place['rating'].toStringAsFixed(1)}',
+                                        ),
+                                      ] else
+                                        const Text('No rating'),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailing: place['price_level'] > 0
+                                  ? Text('\$' * place['price_level'])
+                                  : null,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
