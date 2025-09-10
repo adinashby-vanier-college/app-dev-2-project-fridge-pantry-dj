@@ -154,9 +154,9 @@ class _RecipeMixerScreenState extends State<RecipeMixerScreen> {
         uniqueRecipes[recipe['idMeal']] = recipe;
       }
 
-      // Limit to first 15 recipes for faster processing
+      // Limit to first 20 recipes for faster processing
       List<Map<String, dynamic>> limitedRecipes = uniqueRecipes.values
-          .take(15)
+          .take(20)
           .toList();
 
       // Process recipes concurrently for faster loading

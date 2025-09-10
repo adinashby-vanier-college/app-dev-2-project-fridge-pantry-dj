@@ -87,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       if (_isEditingInfo) {
         nameController.text = originalName;
-        emailController.text = originalEmail;
+
         postcodeController.text = originalPostcode;
         addressController.text = originalAddress;
       }
@@ -119,11 +119,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await user.updateDisplayName(nameController.text.trim());
         }
 
-        // Update email if changed
-        if (emailController.text.trim() != originalEmail) {
-          await user.verifyBeforeUpdateEmail(emailController.text.trim());
-        }
-
         if (!_isValidCanadianPostalCode(postcodeController.text)) {
           _showErrorMessage('Please enter a valid Canadian postal code.');
           setState(() => _isLoading = false);
@@ -134,6 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final database = FirebaseDatabase.instance;
         final userRef = database.ref('users/${user.uid}');
         await userRef.update({
+          'name': nameController.text.trim(),
           'address': addressController.text.trim(),
           'postcode': originalPostcode.trim(), // auto-filled postal code
         });
@@ -890,7 +886,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
 
           // Email field
-          _buildEditField('EMAIL', emailController),
+          _buildReadOnlyField('EMAIL', emailController.text),
           const SizedBox(height: 20),
 
           // Address field with autocomplete
@@ -1024,6 +1020,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'NunitoSans',
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E3D36),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey[300], // Grayed out to show it's read-only
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'NunitoSans',
+              fontSize: 16,
+              color: Colors.grey[600], // Grayed out text
+            ),
+          ),
+        ),
+      ],
     );
   }
 
