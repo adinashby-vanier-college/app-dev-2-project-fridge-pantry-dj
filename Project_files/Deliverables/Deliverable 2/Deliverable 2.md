@@ -13,6 +13,7 @@ Fridge & Pantry is a mobile application developed in Flutter that helps users ma
 
 The primary aim is to reduce food waste by helping users track ingredients and find recipes that utilize what they already have, while providing nutritional insights and convenient grocery shopping options. Our application addresses the common problem of food waste in households by providing an intelligent solution that maximizes the use of existing ingredients while promoting healthy eating habits.
 
+
 ## Functional Requirements
 
 ### 1. User Authentication
@@ -56,6 +57,7 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - Responsive navigation flow across 10+ screens
 - Consistent UI/theme across all screens (Settings, Add Ingredients, Recipe Mixer, Recipe Viewer, Saved Recipes)
 
+
 ## Non-Functional Requirements
 
 ### Security
@@ -75,6 +77,7 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - Real-time database updates using Firebase Realtime Database
 - Efficient ingredient matching algorithms for recipe discovery
 - Optimized image loading and caching
+
 
 ## User Stories
 
@@ -103,56 +106,57 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - Reduce food waste by prioritizing recipes with expiring ingredients
 - Plan meals efficiently to minimize grocery trips
 
+
 ## Test Cases
 
 ### Authentication Testing
 
 #### User Registration
-- ☐ Test successful registration with email and password  
-- ☐ Verify password visibility toggle functionality
+- ✅ Test successful registration with email and password  
+- ✅ Verify password visibility toggle functionality
 
 #### User Login
-- ☐ Test successful login with valid credentials
-- ☐ Test login with invalid credentials 
+- ✅ Test successful login with valid credentials
+- ✅ Test login with invalid credentials 
 
 ### Ingredient Management Testing
 
 #### Add Ingredients
-- ☐ Test adding new ingredients to pantry 
-- ☐ Verify real-time database updates 
+- ✅ Test adding new ingredients to pantry 
+- ✅ Verify real-time database updates 
 
 #### Pantry List Management
-- ☐ Test dynamic pantry list updates across screens
-- ☐ Verify ingredient removal functionality
-- ☐ Test pantry data persistence
+- ✅ Test dynamic pantry list updates across screens
+- ✅ Verify ingredient removal functionality
+- ✅ Test pantry data persistence
 
 ### Recipe Discovery Testing
 
 #### Recipe Mixer
-- ☐ Test recipe generation based on available ingredients
-- ☐ Verify recipe sorting by ingredient match count
-- ☐ Test "Surprise Me" random recipe functionality
-- ☐ Verify API integration and error handling
+- ✅ Test recipe generation based on available ingredients
+- ✅ Verify recipe sorting by ingredient match count
+- ✅ Test "Surprise Me" random recipe functionality
+- ✅ Verify API integration and error handling
 
 #### Recipe Management
-- ☐ Test save/unsave recipe toggle functionality
-- ☐ Verify saved recipes persistence
-- ☐ Test recipe viewer with detailed instructions
-- ☐ Test navigation between recipe screens
+- ✅ Test save/unsave recipe toggle functionality
+- ✅ Verify saved recipes persistence
+- ✅ Test recipe viewer with detailed instructions
+- ✅ Test navigation between recipe screens
 
 ### Location Services Testing
 
 #### Google Maps Integration
-- ☐ Test nearby store and restaurant discovery
-- ☐ Verify location permissions handling
-- ☐ Test address API integration for user profiles
-- ☐ Verify map functionality and store listings
+- ✅ Test nearby store and restaurant discovery
+- ✅ Verify location permissions handling
+- ✅ Test address API integration for user profiles
+- ✅ Verify map functionality and store listings
 
 ### UI/UX Testing
 
 #### Navigation Flow
-- ☐ Test navigation between all 10+ screens
-- ☐ Verify consistent UI theme across all screens
+- ✅ Test navigation between all 10+ screens
+- ✅ Verify consistent UI theme across all screens
 
 
 ## Individual Roles and Responsibilities 
@@ -205,6 +209,7 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - Location services and Google Maps integration
 - DevOps and automated deployment systems
 
+
 ## Team Collaboration Summary 
 
 ### Key Collaborative Efforts:
@@ -212,6 +217,7 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - Consistent communication through commit messages and merge conflict resolution
 - Clear separation of responsibilities that leveraged each member's strengths
 - Successful integration of individual components into a cohesive application
+
 
 ## Technical Implementation Highlights
 
@@ -226,6 +232,7 @@ The primary aim is to reduce food waste by helping users track ingredients and f
 - **API Integration:** Asynchronous JSON parsing with proper error handling and threading
 - **Location Services:** Google Maps integration with place detection and address services
 - **Real-time Database:** Firebase Realtime Database for dynamic data synchronization
+
 
 ## Conclusion
 
