@@ -399,7 +399,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 5),
 
                     // Content Area
                     Expanded(
@@ -421,7 +421,6 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 ),
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
                                     'Edit Your Items',
@@ -432,7 +431,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       color: Color(0xFF1E3D36),
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 1),
                                   Text(
                                     'Add ingredients to find perfect recipes',
                                     style: TextStyle(
@@ -447,7 +446,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 1),
 
                             // Custom ingredient input (matching style)
                             Container(
@@ -465,7 +464,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                     color: const Color(
                                       0xFF795548,
                                     ).withOpacity(0.15),
-                                    blurRadius: 12,
+                                    blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                   BoxShadow(
@@ -482,7 +481,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       controller: customIngredientController,
                                       style: const TextStyle(
                                         fontFamily: 'NunitoSans',
-                                        fontSize: 15,
+                                        fontSize: 14,
                                         color: Color(0xFF1E3D36),
                                       ),
                                       decoration: const InputDecoration(
@@ -493,7 +492,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                         border: InputBorder.none,
                                         contentPadding: EdgeInsets.symmetric(
                                           horizontal: 20,
-                                          vertical: 16,
+                                          vertical: 10,
                                         ),
                                       ),
                                       onSubmitted: (_) =>
@@ -513,15 +512,15 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       icon: const Icon(
                                         Icons.add_rounded,
                                         color: Color(0xFF795548),
-                                        size: 20,
+                                        size: 15,
                                       ),
-                                      padding: const EdgeInsets.all(8),
+                                      padding: const EdgeInsets.all(5),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 15),
 
                             // Common ingredients section (reduced height)
                             const Text(
@@ -533,9 +532,9 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 color: Color(0xFF1E3D36),
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             SizedBox(
-                              height: 130, // Reduced from 200
+                              height: 173,
                               child: GridView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 gridDelegate:
@@ -545,8 +544,8 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                       mainAxisSpacing: 8,
                                       childAspectRatio: 2.8,
                                     ),
-                                itemCount: commonIngredients.length > 9
-                                    ? 9
+                                itemCount: commonIngredients.length > 12
+                                    ? 12
                                     : commonIngredients.length,
                                 itemBuilder: (context, index) {
                                   final ingredient = commonIngredients[index];
@@ -618,7 +617,7 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 32),
 
                             // Your Pantry section (expanded)
                             Row(
@@ -675,11 +674,10 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                   ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 5),
 
-                            // Pantry items container (increased height)
                             Container(
-                              height: 280, // Increased from 200
+                              height: 200,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
@@ -705,53 +703,56 @@ class _AddIngredientsScreenState extends State<AddIngredientsScreen> {
                                 ],
                               ),
                               child: tempPantryList.isEmpty
-                                  ? Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: const Color(
-                                                0xFF795548,
-                                              ).withOpacity(0.1),
-                                              shape: BoxShape.circle,
+                                  ? Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF795548,
+                                                ).withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.kitchen,
+                                                size:
+                                                    32, // Increased from 10 for better visibility
+                                                color: Color(0xFF795548),
+                                              ),
                                             ),
-                                            child: const Icon(
-                                              Icons.kitchen,
-                                              size: 40,
-                                              color: Color(0xFF795548),
+                                            const SizedBox(height: 16),
+                                            const Text(
+                                              'Your pantry is empty',
+                                              style: TextStyle(
+                                                fontFamily: 'NunitoSans',
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF1E3D36),
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 16),
-                                          const Text(
-                                            'Your pantry is empty',
-                                            style: TextStyle(
-                                              fontFamily: 'NunitoSans',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF1E3D36),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Add ingredients using the options above',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: 'NunitoSans',
+                                                fontSize: 12,
+                                                color: const Color(
+                                                  0xFF2D5A54,
+                                                ).withOpacity(0.6),
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'Add ingredients using the options above',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontFamily: 'NunitoSans',
-                                              fontSize: 12,
-                                              color: const Color(
-                                                0xFF2D5A54,
-                                              ).withOpacity(0.6),
-                                            ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     )
                                   : GridView.builder(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.all(10),
                                       gridDelegate:
                                           const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 3,
